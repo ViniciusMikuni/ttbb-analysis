@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<MethodSetup Method="PyKeras::PyDNN_QCD">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.12/04 [396292]"/>
+    <Info name="Creator" value="viniciusmikuni"/>
+    <Info name="Date" value="Mon Mar  5 05:55:37 2018"/>
+    <Info name="Host" value="Darwin Viniciuss-MacBook-Pro.local 17.2.0 Darwin Kernel Version 17.2.0: Fri Sep 29 18:27:05 PDT 2017; root:xnu-4570.20.62~3/RELEASE_X86_64 x86_64"/>
+    <Info name="Dir" value="/Users/viniciusmikuni/cernbox/CMS/ttbbAnalysis/KinFitter/test/MVA/BDT"/>
+    <Info name="Training events" value="754784"/>
+    <Info name="TrainingTime" value="4.43894589e+02"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="No">None</Option>
+    <Option name="H" modified="Yes">True</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="FilenameModel" modified="Yes">models/model_QCD.h5</Option>
+    <Option name="FilenameTrainedModel" modified="No">MVA_weights/weights/TrainedModel_PyDNN_QCD.h5</Option>
+    <Option name="BatchSize" modified="Yes">512</Option>
+    <Option name="NumEpochs" modified="Yes">50</Option>
+    <Option name="Verbose" modified="No">1</Option>
+    <Option name="ContinueTraining" modified="No">False</Option>
+    <Option name="SaveBestOnly" modified="No">True</Option>
+    <Option name="TriesEarlyStopping" modified="No">-1</Option>
+    <Option name="LearningRateSchedule" modified="No"/>
+  </Options>
+  <Variables NVar="4">
+    <Variable VarIndex="0" Expression="BDT_Comb" Label="BDT_Comb" Title="BDT_Comb" Unit="" Internal="BDT_Comb" Type="F" Min="-9.97618794e-01" Max="9.92211998e-01"/>
+    <Variable VarIndex="1" Expression="BDT_CWoLa" Label="BDT_CWoLa" Title="BDT_CWoLa" Unit="" Internal="BDT_CWoLa" Type="F" Min="-9.99855399e-01" Max="9.99993920e-01"/>
+    <Variable VarIndex="2" Expression="prob_chi2" Label="prob_chi2" Title="prob_chi2" Unit="" Internal="prob_chi2" Type="F" Min="1.00002673e-07" Max="9.99999285e-01"/>
+    <Variable VarIndex="3" Expression="qgLR" Label="qgLR" Title="qgLR" Unit="" Internal="qgLR" Type="F" Min="0.00000000e+00" Max="1.00000000e+00"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="0"/>
+  <MVAPdfs/>
+</MethodSetup>

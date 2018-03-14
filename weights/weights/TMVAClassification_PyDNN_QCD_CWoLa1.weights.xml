@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<MethodSetup Method="PyKeras::PyDNN_QCD_CWoLa1">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.12/04 [396292]"/>
+    <Info name="Creator" value="viniciusmikuni"/>
+    <Info name="Date" value="Mon Feb 19 14:04:12 2018"/>
+    <Info name="Host" value="Darwin Viniciuss-MacBook-Pro.local 17.2.0 Darwin Kernel Version 17.2.0: Fri Sep 29 18:27:05 PDT 2017; root:xnu-4570.20.62~3/RELEASE_X86_64 x86_64"/>
+    <Info name="Dir" value="/Users/viniciusmikuni/cernbox/CMS/ttbbAnalysis/KinFitter/test/MVA/BDT"/>
+    <Info name="Training events" value="327123"/>
+    <Info name="TrainingTime" value="9.70817080e+01"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="No">None</Option>
+    <Option name="H" modified="Yes">True</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="FilenameModel" modified="Yes">models/model_QCD_CWoLa1.h5</Option>
+    <Option name="FilenameTrainedModel" modified="No">MVA_weights/weights/TrainedModel_PyDNN_QCD_CWoLa1.h5</Option>
+    <Option name="BatchSize" modified="Yes">128</Option>
+    <Option name="NumEpochs" modified="Yes">20</Option>
+    <Option name="Verbose" modified="No">1</Option>
+    <Option name="ContinueTraining" modified="No">False</Option>
+    <Option name="SaveBestOnly" modified="No">True</Option>
+    <Option name="TriesEarlyStopping" modified="No">-1</Option>
+    <Option name="LearningRateSchedule" modified="No"/>
+  </Options>
+  <Variables NVar="22">
+    <Variable VarIndex="0" Expression="top1_m" Label="top1_m" Title="top1_m" Unit="" Internal="top1_m" Type="F" Min="7.38372192e+01" Max="2.88592499e+02"/>
+    <Variable VarIndex="1" Expression="top2_m" Label="top2_m" Title="top2_m" Unit="" Internal="top2_m" Type="F" Min="6.75231781e+01" Max="2.88756622e+02"/>
+    <Variable VarIndex="2" Expression="w1_m" Label="w1_m" Title="w1_m" Unit="" Internal="w1_m" Type="F" Min="1.75459976e+01" Max="1.75533081e+02"/>
+    <Variable VarIndex="3" Expression="w2_m" Label="w2_m" Title="w2_m" Unit="" Internal="w2_m" Type="F" Min="1.84275913e+01" Max="1.74982010e+02"/>
+    <Variable VarIndex="4" Expression="deltaRb1b2" Label="deltaRb1b2" Title="deltaRb1b2" Unit="" Internal="deltaRb1b2" Type="F" Min="0.00000000e+00" Max="5.62600613e+00"/>
+    <Variable VarIndex="5" Expression="deltaRb1w1" Label="deltaRb1w1" Title="deltaRb1w1" Unit="" Internal="deltaRb1w1" Type="F" Min="0.00000000e+00" Max="7.88607883e+00"/>
+    <Variable VarIndex="6" Expression="deltaRb2w2" Label="deltaRb2w2" Title="deltaRb2w2" Unit="" Internal="deltaRb2w2" Type="F" Min="0.00000000e+00" Max="6.87519073e+00"/>
+    <Variable VarIndex="7" Expression="jet_CSV[0]" Label="jet_CSV[0]" Title="jet_CSV[0]" Unit="" Internal="jet_CSV_0_" Type="F" Min="0.00000000e+00" Max="1.00000000e+00"/>
+    <Variable VarIndex="8" Expression="jet_CSV[1]" Label="jet_CSV[1]" Title="jet_CSV[1]" Unit="" Internal="jet_CSV_1_" Type="F" Min="0.00000000e+00" Max="1.00000000e+00"/>
+    <Variable VarIndex="9" Expression="BDT_Comb" Label="BDT_Comb" Title="BDT_Comb" Unit="" Internal="BDT_Comb" Type="F" Min="-9.98443842e-01" Max="9.88075018e-01"/>
+    <Variable VarIndex="10" Expression="simple_chi2" Label="simple_chi2" Title="simple_chi2" Unit="" Internal="simple_chi2" Type="F" Min="2.43276427e-03" Max="3.33767548e+01"/>
+    <Variable VarIndex="11" Expression="meanDeltaRbtag" Label="meanDeltaRbtag" Title="meanDeltaRbtag" Unit="" Internal="meanDeltaRbtag" Type="F" Min="3.90224814e-01" Max="5.60265398e+00"/>
+    <Variable VarIndex="12" Expression="mindeltaRb1q" Label="mindeltaRb1q" Title="mindeltaRb1q" Unit="" Internal="mindeltaRb1q" Type="F" Min="0.00000000e+00" Max="3.82866263e+00"/>
+    <Variable VarIndex="13" Expression="mindeltaRb2p" Label="mindeltaRb2p" Title="mindeltaRb2p" Unit="" Internal="mindeltaRb2p" Type="F" Min="0.00000000e+00" Max="4.11091805e+00"/>
+    <Variable VarIndex="14" Expression="jet_CSV[2]" Label="jet_CSV[2]" Title="jet_CSV[2]" Unit="" Internal="jet_CSV_2_" Type="F" Min="0.00000000e+00" Max="9.99574363e-01"/>
+    <Variable VarIndex="15" Expression="jet_CSV[3]" Label="jet_CSV[3]" Title="jet_CSV[3]" Unit="" Internal="jet_CSV_3_" Type="F" Min="0.00000000e+00" Max="9.99629915e-01"/>
+    <Variable VarIndex="16" Expression="jet_CSV[4]" Label="jet_CSV[4]" Title="jet_CSV[4]" Unit="" Internal="jet_CSV_4_" Type="F" Min="0.00000000e+00" Max="9.99520063e-01"/>
+    <Variable VarIndex="17" Expression="jet_CSV[5]" Label="jet_CSV[5]" Title="jet_CSV[5]" Unit="" Internal="jet_CSV_5_" Type="F" Min="0.00000000e+00" Max="9.99631464e-01"/>
+    <Variable VarIndex="18" Expression="jets_dRmax" Label="jets_dRmax" Title="jets_dRmax" Unit="" Internal="jets_dRmax" Type="F" Min="1.93230546e+00" Max="5.65536118e+00"/>
+    <Variable VarIndex="19" Expression="jets_dRavg" Label="jets_dRavg" Title="jets_dRavg" Unit="" Internal="jets_dRavg" Type="F" Min="9.63145196e-01" Max="3.28623796e+00"/>
+    <Variable VarIndex="20" Expression="all_mass" Label="all_mass" Title="all_mass" Unit="" Internal="all_mass" Type="F" Min="4.45707733e+02" Max="6.61677002e+03"/>
+    <Variable VarIndex="21" Expression="closest_mass" Label="closest_mass" Title="closest_mass" Unit="" Internal="closest_mass" Type="F" Min="1.48440561e+01" Max="1.17368042e+02"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="0"/>
+  <MVAPdfs/>
+</MethodSetup>

@@ -1,0 +1,4 @@
+
+# DO NOT DELETE
+./../src/triggerWeightRound_h.so: /Users/viniciusmikuni/Downloads/build/include/RVersion.h /Users/viniciusmikuni/Downloads/build/include/RConfig.h /Users/viniciusmikuni/Downloads/build/include/TClass.h /Users/viniciusmikuni/Downloads/build/include/TDictAttributeMap.h /Users/viniciusmikuni/Downloads/build/include/TInterpreter.h /Users/viniciusmikuni/Downloads/build/include/TROOT.h /Users/viniciusmikuni/Downloads/build/include/TBuffer.h /Users/viniciusmikuni/Downloads/build/include/TMemberInspector.h /Users/viniciusmikuni/Downloads/build/include/TError.h /Users/viniciusmikuni/Downloads/build/include/RtypesImp.h /Users/viniciusmikuni/Downloads/build/include/TIsAProxy.h /Users/viniciusmikuni/Downloads/build/include/TFileMergeInfo.h /Users/viniciusmikuni/Downloads/build/include/TCollectionProxyInfo.h /Users/viniciusmikuni/Downloads/build/bin/rootcling
+triggerWeightRound_h__ROOTBUILDVERSION= 6.12/04

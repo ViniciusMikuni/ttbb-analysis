@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<MethodSetup Method="Fisher::Fish_QCD_CWoLa_Diff">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.12/04 [396292]"/>
+    <Info name="Creator" value="viniciusmikuni"/>
+    <Info name="Date" value="Tue Feb 20 18:56:52 2018"/>
+    <Info name="Host" value="Darwin Viniciuss-MacBook-Pro.local 17.2.0 Darwin Kernel Version 17.2.0: Fri Sep 29 18:27:05 PDT 2017; root:xnu-4570.20.62~3/RELEASE_X86_64 x86_64"/>
+    <Info name="Dir" value="/Users/viniciusmikuni/cernbox/CMS/ttbbAnalysis/KinFitter/test/MVA/BDT"/>
+    <Info name="Training events" value="327123"/>
+    <Info name="TrainingTime" value="2.93204403e+00"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="Yes">None</Option>
+    <Option name="H" modified="Yes">True</Option>
+    <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="Method" modified="Yes">Fisher</Option>
+  </Options>
+  <Variables NVar="22">
+    <Variable VarIndex="0" Expression="top1_m" Label="top1_m" Title="top1_m" Unit="" Internal="top1_m" Type="F" Min="7.38372192e+01" Max="2.88592499e+02"/>
+    <Variable VarIndex="1" Expression="top2_m" Label="top2_m" Title="top2_m" Unit="" Internal="top2_m" Type="F" Min="6.75231781e+01" Max="2.88756622e+02"/>
+    <Variable VarIndex="2" Expression="w1_m" Label="w1_m" Title="w1_m" Unit="" Internal="w1_m" Type="F" Min="1.75459976e+01" Max="1.75533081e+02"/>
+    <Variable VarIndex="3" Expression="w2_m" Label="w2_m" Title="w2_m" Unit="" Internal="w2_m" Type="F" Min="1.84275913e+01" Max="1.74982010e+02"/>
+    <Variable VarIndex="4" Expression="deltaRb1b2" Label="deltaRb1b2" Title="deltaRb1b2" Unit="" Internal="deltaRb1b2" Type="F" Min="0.00000000e+00" Max="5.62600613e+00"/>
+    <Variable VarIndex="5" Expression="deltaRb1w1" Label="deltaRb1w1" Title="deltaRb1w1" Unit="" Internal="deltaRb1w1" Type="F" Min="0.00000000e+00" Max="7.88607883e+00"/>
+    <Variable VarIndex="6" Expression="deltaRb2w2" Label="deltaRb2w2" Title="deltaRb2w2" Unit="" Internal="deltaRb2w2" Type="F" Min="0.00000000e+00" Max="6.87519073e+00"/>
+    <Variable VarIndex="7" Expression="jet_CSV[0]" Label="jet_CSV[0]" Title="jet_CSV[0]" Unit="" Internal="jet_CSV_0_" Type="F" Min="0.00000000e+00" Max="1.00000000e+00"/>
+    <Variable VarIndex="8" Expression="jet_CSV[1]" Label="jet_CSV[1]" Title="jet_CSV[1]" Unit="" Internal="jet_CSV_1_" Type="F" Min="0.00000000e+00" Max="1.00000000e+00"/>
+    <Variable VarIndex="9" Expression="BDT_Comb" Label="BDT_Comb" Title="BDT_Comb" Unit="" Internal="BDT_Comb" Type="F" Min="-9.98443842e-01" Max="9.88075018e-01"/>
+    <Variable VarIndex="10" Expression="simple_chi2" Label="simple_chi2" Title="simple_chi2" Unit="" Internal="simple_chi2" Type="F" Min="2.43276427e-03" Max="3.33767548e+01"/>
+    <Variable VarIndex="11" Expression="meanDeltaRbtag" Label="meanDeltaRbtag" Title="meanDeltaRbtag" Unit="" Internal="meanDeltaRbtag" Type="F" Min="3.90224814e-01" Max="5.60265398e+00"/>
+    <Variable VarIndex="12" Expression="mindeltaRb1q" Label="mindeltaRb1q" Title="mindeltaRb1q" Unit="" Internal="mindeltaRb1q" Type="F" Min="0.00000000e+00" Max="3.82866263e+00"/>
+    <Variable VarIndex="13" Expression="mindeltaRb2p" Label="mindeltaRb2p" Title="mindeltaRb2p" Unit="" Internal="mindeltaRb2p" Type="F" Min="0.00000000e+00" Max="4.11091805e+00"/>
+    <Variable VarIndex="14" Expression="jet_CSV[2]" Label="jet_CSV[2]" Title="jet_CSV[2]" Unit="" Internal="jet_CSV_2_" Type="F" Min="0.00000000e+00" Max="9.99574363e-01"/>
+    <Variable VarIndex="15" Expression="jet_CSV[3]" Label="jet_CSV[3]" Title="jet_CSV[3]" Unit="" Internal="jet_CSV_3_" Type="F" Min="0.00000000e+00" Max="9.99629915e-01"/>
+    <Variable VarIndex="16" Expression="jet_CSV[4]" Label="jet_CSV[4]" Title="jet_CSV[4]" Unit="" Internal="jet_CSV_4_" Type="F" Min="0.00000000e+00" Max="9.99520063e-01"/>
+    <Variable VarIndex="17" Expression="jet_CSV[5]" Label="jet_CSV[5]" Title="jet_CSV[5]" Unit="" Internal="jet_CSV_5_" Type="F" Min="0.00000000e+00" Max="9.99631464e-01"/>
+    <Variable VarIndex="18" Expression="jets_dRmax" Label="jets_dRmax" Title="jets_dRmax" Unit="" Internal="jets_dRmax" Type="F" Min="1.93230546e+00" Max="5.65536118e+00"/>
+    <Variable VarIndex="19" Expression="jets_dRavg" Label="jets_dRavg" Title="jets_dRavg" Unit="" Internal="jets_dRavg" Type="F" Min="9.63145196e-01" Max="3.28623796e+00"/>
+    <Variable VarIndex="20" Expression="all_mass" Label="all_mass" Title="all_mass" Unit="" Internal="all_mass" Type="F" Min="4.45707733e+02" Max="6.61677002e+03"/>
+    <Variable VarIndex="21" Expression="closest_mass" Label="closest_mass" Title="closest_mass" Unit="" Internal="closest_mass" Type="F" Min="1.48440561e+01" Max="1.17368042e+02"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="0"/>
+  <MVAPdfs>
+    <PDF Name="Fish_QCD_CWoLa_Diff_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+      <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-1.1684533357620239e+00" XMax="8.3226740360260010e-01" HasEquidistantBins="1">
+        0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 6.69492091e-04 4.71633919e-04 1.06361756e-03 2.65815116e-03 2.41625821e-03 7.37662031e-03 1.51353650e-02 3.04420206e-02 4.03721305e-02 5.40577468e-02 8.23072853e-02 1.17977578e-01 1.58861809e-01 2.12612499e-01 2.51592011e-01 2.93715176e-01 3.53699893e-01 3.78433251e-01 4.53617022e-01 5.04870682e-01 5.43304282e-01 5.72096311e-01 6.40870449e-01 7.17490645e-01 7.90221505e-01 8.64157001e-01 9.39798854e-01 1.13261494e+00 1.26797015e+00 1.42942954e+00 1.57760882e+00 1.71765731e+00 1.79180059e+00 1.74876629e+00 1.62769867e+00 1.39576548e+00 1.16138190e+00 8.07600321e-01 5.73948705e-01 3.57129826e-01 2.09490913e-01 9.99048622e-02 4.31936378e-02 1.58473644e-02 2.54303091e-03 3.52376249e-04 
+      </Histogram>
+    </PDF>
+    <PDF Name="Fish_QCD_CWoLa_Diff_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+      <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-1.1684533357620239e+00" XMax="8.3226740360260010e-01" HasEquidistantBins="1">
+        1.19847662e-04 5.99238310e-04 8.38933633e-04 2.63664856e-03 5.39314479e-03 9.46796529e-03 1.90557782e-02 3.10405444e-02 5.66879441e-02 8.73689455e-02 1.37944659e-01 2.03381482e-01 2.91469514e-01 4.12156109e-01 5.26490779e-01 6.47896460e-01 7.74215896e-01 8.93104777e-01 1.01091503e+00 1.08917555e+00 1.17067196e+00 1.19524073e+00 1.21597438e+00 1.22676067e+00 1.21237895e+00 1.19895601e+00 1.20003464e+00 1.17079181e+00 1.12045579e+00 1.10032138e+00 1.04794796e+00 1.01235320e+00 9.50991197e-01 8.58828345e-01 7.75893763e-01 6.55327015e-01 5.37157221e-01 4.18508035e-01 2.84758045e-01 1.92834888e-01 1.15173603e-01 6.68749953e-02 3.43962790e-02 1.78573016e-02 6.23207842e-03 3.23588687e-03 8.38933633e-04 2.39695324e-04 0.00000000e+00 0.00000000e+00 
+      </Histogram>
+    </PDF>
+  </MVAPdfs>
+  <Weights NCoeff="23">
+    <Coefficient Index="0" Value="2.4951409216353823e-01"/>
+    <Coefficient Index="1" Value="-5.1780338312794441e-05"/>
+    <Coefficient Index="2" Value="9.9733729568840155e-04"/>
+    <Coefficient Index="3" Value="1.9936464629692384e-03"/>
+    <Coefficient Index="4" Value="9.0828184775021577e-04"/>
+    <Coefficient Index="5" Value="3.4748848080795591e-02"/>
+    <Coefficient Index="6" Value="-3.6095854856907958e-02"/>
+    <Coefficient Index="7" Value="-3.0599398526474513e-02"/>
+    <Coefficient Index="8" Value="-3.0417860523971357e-01"/>
+    <Coefficient Index="9" Value="-1.8176826793199882e-01"/>
+    <Coefficient Index="10" Value="3.9878513517835446e-01"/>
+    <Coefficient Index="11" Value="-7.4414931372536776e-03"/>
+    <Coefficient Index="12" Value="1.0670833909189997e-01"/>
+    <Coefficient Index="13" Value="6.0709809405436084e-03"/>
+    <Coefficient Index="14" Value="-3.1171840808623653e-02"/>
+    <Coefficient Index="15" Value="1.1203682092990989e-02"/>
+    <Coefficient Index="16" Value="1.4797273557034800e-02"/>
+    <Coefficient Index="17" Value="-2.1820112216047575e-02"/>
+    <Coefficient Index="18" Value="-2.2713091643247526e-02"/>
+    <Coefficient Index="19" Value="-5.5663756897150009e-02"/>
+    <Coefficient Index="20" Value="-2.2873753644707639e-01"/>
+    <Coefficient Index="21" Value="-1.6256578115676541e-05"/>
+    <Coefficient Index="22" Value="4.5397658343867995e-03"/>
+  </Weights>
+</MethodSetup>

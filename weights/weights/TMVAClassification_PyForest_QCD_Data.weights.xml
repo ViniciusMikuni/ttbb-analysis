@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<MethodSetup Method="PyRandomForest::PyForest_QCD_Data">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.12/04 [396292]"/>
+    <Info name="Creator" value="viniciusmikuni"/>
+    <Info name="Date" value="Mon Feb  5 18:19:56 2018"/>
+    <Info name="Host" value="Darwin Viniciuss-MacBook-Pro.local 17.2.0 Darwin Kernel Version 17.2.0: Fri Sep 29 18:27:05 PDT 2017; root:xnu-4570.20.62~3/RELEASE_X86_64 x86_64"/>
+    <Info name="Dir" value="/Users/viniciusmikuni/cernbox/CMS/ttbbAnalysis/KinFitter/test/MVA/BDT"/>
+    <Info name="Training events" value="530920"/>
+    <Info name="TrainingTime" value="1.01857568e+03"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="Yes">N</Option>
+    <Option name="H" modified="No">False</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="Normalise" modified="No">False</Option>
+    <Option name="D" modified="No">False</Option>
+    <Option name="VarTransformType" modified="No">Signal</Option>
+    <Option name="TxtWeightFilesOnly" modified="No">True</Option>
+    <Option name="NbinsMVAPdf" modified="No">60</Option>
+    <Option name="NsmoothMVAPdf" modified="No">2</Option>
+    <Option name="NEstimators" modified="Yes">850</Option>
+    <Option name="Criterion" modified="Yes">gini</Option>
+    <Option name="MaxDepth" modified="Yes">6</Option>
+    <Option name="MinSamplesSplit" modified="No">2</Option>
+    <Option name="MinSamplesLeaf" modified="Yes">1</Option>
+    <Option name="MinWeightFractionLeaf" modified="Yes">0.000000e+00</Option>
+    <Option name="MaxFeatures" modified="Yes">'auto'</Option>
+    <Option name="MaxLeafNodes" modified="No">None</Option>
+    <Option name="Bootstrap" modified="Yes">True</Option>
+    <Option name="OoBScore" modified="No">False</Option>
+    <Option name="NJobs" modified="No">1</Option>
+    <Option name="RandomState" modified="No">None</Option>
+    <Option name="Verbose" modified="No">0</Option>
+    <Option name="WarmStart" modified="No">False</Option>
+    <Option name="ClassWeight" modified="No">None</Option>
+    <Option name="FilenameClassifier" modified="No">MVA_weights/weights/PyRFModel_PyForest_QCD_Data.PyData</Option>
+  </Options>
+  <Variables NVar="9">
+    <Variable VarIndex="0" Expression="simple_chi2" Label="simple_chi2" Title="simple_chi2" Unit="" Internal="simple_chi2" Type="F" Min="8.96167196e-03" Max="5.96807383e+04"/>
+    <Variable VarIndex="1" Expression="meanDeltaRbtag" Label="meanDeltaRbtag" Title="meanDeltaRbtag" Unit="" Internal="meanDeltaRbtag" Type="F" Min="3.83564323e-01" Max="5.63277388e+00"/>
+    <Variable VarIndex="2" Expression="BDT_Comb" Label="BDT_Comb" Title="BDT_Comb" Unit="" Internal="BDT_Comb" Type="F" Min="-9.94386971e-01" Max="9.84114110e-01"/>
+    <Variable VarIndex="3" Expression="jet_CSV[0]" Label="jet_CSV[0]" Title="jet_CSV[0]" Unit="" Internal="jet_CSV_0_" Type="F" Min="-1.00000000e+01" Max="1.00000000e+00"/>
+    <Variable VarIndex="4" Expression="jet_CSV[1]" Label="jet_CSV[1]" Title="jet_CSV[1]" Unit="" Internal="jet_CSV_1_" Type="F" Min="-1.00000000e+01" Max="1.00000000e+00"/>
+    <Variable VarIndex="5" Expression="jet_QGL[2]" Label="jet_QGL[2]" Title="jet_QGL[2]" Unit="" Internal="jet_QGL_2_" Type="F" Min="-1.00000000e+00" Max="1.00000000e+00"/>
+    <Variable VarIndex="6" Expression="jet_QGL[3]" Label="jet_QGL[3]" Title="jet_QGL[3]" Unit="" Internal="jet_QGL_3_" Type="F" Min="-2.00000000e+01" Max="1.00000000e+00"/>
+    <Variable VarIndex="7" Expression="jet_QGL[4]" Label="jet_QGL[4]" Title="jet_QGL[4]" Unit="" Internal="jet_QGL_4_" Type="F" Min="-2.00000000e+01" Max="1.00000000e+00"/>
+    <Variable VarIndex="8" Expression="jet_QGL[5]" Label="jet_QGL[5]" Title="jet_QGL[5]" Unit="" Internal="jet_QGL_5_" Type="F" Min="-2.00000000e+01" Max="1.00000000e+00"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="1">
+    <Transform Name="Normalize">
+      <Selection>
+        <Input NInputs="9">
+          <Input Type="Variable" Label="simple_chi2" Expression="simple_chi2"/>
+          <Input Type="Variable" Label="meanDeltaRbtag" Expression="meanDeltaRbtag"/>
+          <Input Type="Variable" Label="BDT_Comb" Expression="BDT_Comb"/>
+          <Input Type="Variable" Label="jet_CSV[0]" Expression="jet_CSV[0]"/>
+          <Input Type="Variable" Label="jet_CSV[1]" Expression="jet_CSV[1]"/>
+          <Input Type="Variable" Label="jet_QGL[2]" Expression="jet_QGL[2]"/>
+          <Input Type="Variable" Label="jet_QGL[3]" Expression="jet_QGL[3]"/>
+          <Input Type="Variable" Label="jet_QGL[4]" Expression="jet_QGL[4]"/>
+          <Input Type="Variable" Label="jet_QGL[5]" Expression="jet_QGL[5]"/>
+        </Input>
+        <Output NOutputs="9">
+          <Output Type="Variable" Label="simple_chi2" Expression="simple_chi2"/>
+          <Output Type="Variable" Label="meanDeltaRbtag" Expression="meanDeltaRbtag"/>
+          <Output Type="Variable" Label="BDT_Comb" Expression="BDT_Comb"/>
+          <Output Type="Variable" Label="jet_CSV[0]" Expression="jet_CSV[0]"/>
+          <Output Type="Variable" Label="jet_CSV[1]" Expression="jet_CSV[1]"/>
+          <Output Type="Variable" Label="jet_QGL[2]" Expression="jet_QGL[2]"/>
+          <Output Type="Variable" Label="jet_QGL[3]" Expression="jet_QGL[3]"/>
+          <Output Type="Variable" Label="jet_QGL[4]" Expression="jet_QGL[4]"/>
+          <Output Type="Variable" Label="jet_QGL[5]" Expression="jet_QGL[5]"/>
+        </Output>
+      </Selection>
+      <Class ClassIndex="0">
+        <Ranges>
+          <Range Index="0" Min="8.9616719633340836e-03" Max="5.9680738281250000e+04"/>
+          <Range Index="1" Min="3.9680522680282593e-01" Max="5.3929705619812012e+00"/>
+          <Range Index="2" Min="-9.9438697099685669e-01" Max="9.8411411046981812e-01"/>
+          <Range Index="3" Min="-1.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="4" Min="-1.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="5" Min="-1.0000000000000000e+00" Max="1.0000000000000000e+00"/>
+          <Range Index="6" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="7" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="8" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+        </Ranges>
+      </Class>
+      <Class ClassIndex="1">
+        <Ranges>
+          <Range Index="0" Min="9.6755929291248322e-02" Max="3.4431847656250000e+04"/>
+          <Range Index="1" Min="3.8356432318687439e-01" Max="5.6327738761901855e+00"/>
+          <Range Index="2" Min="-9.9383944272994995e-01" Max="7.3635661602020264e-01"/>
+          <Range Index="3" Min="-1.0000000000000000e+01" Max="9.9927634000778198e-01"/>
+          <Range Index="4" Min="-1.0000000000000000e+01" Max="9.9953919649124146e-01"/>
+          <Range Index="5" Min="-1.0000000000000000e+00" Max="1.0000000000000000e+00"/>
+          <Range Index="6" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="7" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="8" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+        </Ranges>
+      </Class>
+      <Class ClassIndex="2">
+        <Ranges>
+          <Range Index="0" Min="8.9616719633340836e-03" Max="5.9680738281250000e+04"/>
+          <Range Index="1" Min="3.8356432318687439e-01" Max="5.6327738761901855e+00"/>
+          <Range Index="2" Min="-9.9438697099685669e-01" Max="9.8411411046981812e-01"/>
+          <Range Index="3" Min="-1.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="4" Min="-1.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="5" Min="-1.0000000000000000e+00" Max="1.0000000000000000e+00"/>
+          <Range Index="6" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="7" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+          <Range Index="8" Min="-2.0000000000000000e+01" Max="1.0000000000000000e+00"/>
+        </Ranges>
+      </Class>
+    </Transform>
+  </Transformations>
+  <MVAPdfs/>
+</MethodSetup>

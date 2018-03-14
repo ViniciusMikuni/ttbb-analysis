@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<MethodSetup Method="Fisher::Fish_QCD">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.12/04 [396292]"/>
+    <Info name="Creator" value="viniciusmikuni"/>
+    <Info name="Date" value="Tue Feb 20 18:41:53 2018"/>
+    <Info name="Host" value="Darwin Viniciuss-MacBook-Pro.local 17.2.0 Darwin Kernel Version 17.2.0: Fri Sep 29 18:27:05 PDT 2017; root:xnu-4570.20.62~3/RELEASE_X86_64 x86_64"/>
+    <Info name="Dir" value="/Users/viniciusmikuni/cernbox/CMS/ttbbAnalysis/KinFitter/test/MVA/BDT"/>
+    <Info name="Training events" value="723270"/>
+    <Info name="TrainingTime" value="3.71095181e-01"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="Yes">None</Option>
+    <Option name="H" modified="Yes">True</Option>
+    <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="Method" modified="Yes">Fisher</Option>
+  </Options>
+  <Variables NVar="4">
+    <Variable VarIndex="0" Expression="BDT_Comb" Label="BDT_Comb" Title="BDT_Comb" Unit="" Internal="BDT_Comb" Type="F" Min="-9.98794496e-01" Max="9.88075018e-01"/>
+    <Variable VarIndex="1" Expression="BDT_QCDCWoLa" Label="BDT_QCDCWoLa" Title="BDT_QCDCWoLa" Unit="" Internal="BDT_QCDCWoLa" Type="F" Min="-9.98823583e-01" Max="9.99334037e-01"/>
+    <Variable VarIndex="2" Expression="prob_chi2" Label="prob_chi2" Title="prob_chi2" Unit="" Internal="prob_chi2" Type="F" Min="1.00005900e-06" Max="9.99998093e-01"/>
+    <Variable VarIndex="3" Expression="BDT_QCD" Label="BDT_QCD" Title="BDT_QCD" Unit="" Internal="BDT_QCD" Type="F" Min="-7.83229768e-01" Max="7.78383315e-01"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="0"/>
+  <MVAPdfs>
+    <PDF Name="Fish_QCD_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+      <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-5.6027054786682129e-01" XMax="6.3924449682235718e-01" HasEquidistantBins="1">
+        1.86385423e-03 1.13513442e-02 3.18056120e-02 6.61032588e-02 9.69227562e-02 1.41791618e-01 1.78239760e-01 2.20552950e-01 2.67692996e-01 2.98782633e-01 3.49384114e-01 4.06046577e-01 4.76226056e-01 5.49798279e-01 6.48237737e-01 7.48102963e-01 8.39552164e-01 9.24042368e-01 1.00223899e+00 1.08393972e+00 1.14450277e+00 1.20096918e+00 1.25452854e+00 1.27353567e+00 1.33496540e+00 1.38440924e+00 1.46524980e+00 1.51377909e+00 1.54314140e+00 1.61377032e+00 1.58768393e+00 1.60563102e+00 1.56122352e+00 1.53888489e+00 1.50091973e+00 1.41620847e+00 1.33598436e+00 1.25779243e+00 1.17930807e+00 1.12278057e+00 1.03770107e+00 9.55385846e-01 8.68350426e-01 7.60913256e-01 6.51955623e-01 5.21634696e-01 3.72459606e-01 2.20846669e-01 9.88186936e-02 1.75021673e-02 
+      </Histogram>
+    </PDF>
+    <PDF Name="Fish_QCD_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+      <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-5.6027054786682129e-01" XMax="6.3924449682235718e-01" HasEquidistantBins="1">
+        2.80679514e-02 1.59469381e-01 3.60997979e-01 5.98735176e-01 8.06228893e-01 9.46867025e-01 1.15372664e+00 1.17007451e+00 1.24649808e+00 1.36533815e+00 1.47545575e+00 1.59057303e+00 1.63288182e+00 1.72812099e+00 1.87734869e+00 1.88347913e+00 1.90396238e+00 1.92196567e+00 1.88659715e+00 1.79166568e+00 1.69795734e+00 1.55630335e+00 1.45813207e+00 1.37691065e+00 1.26501672e+00 1.17728239e+00 1.12379338e+00 1.03763345e+00 9.03578053e-01 8.01467037e-01 7.19958802e-01 6.44083909e-01 4.99682762e-01 4.27295085e-01 3.01142277e-01 2.69689710e-01 2.21461323e-01 1.73136582e-01 1.32041739e-01 9.28794470e-02 7.86610521e-02 7.32550256e-02 5.92398655e-02 3.31250715e-02 2.10419376e-02 7.79043861e-03 2.26461898e-03 6.34037164e-04 0.00000000e+00 0.00000000e+00 
+      </Histogram>
+    </PDF>
+  </MVAPdfs>
+  <Weights NCoeff="5">
+    <Coefficient Index="0" Value="-9.7520866178736745e-02"/>
+    <Coefficient Index="1" Value="1.8302074578781910e-01"/>
+    <Coefficient Index="2" Value="2.0668423239622754e-02"/>
+    <Coefficient Index="3" Value="2.7821468721271869e-01"/>
+    <Coefficient Index="4" Value="3.4398103098005911e-01"/>
+  </Weights>
+</MethodSetup>

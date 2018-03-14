@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<MethodSetup Method="PyKeras::PyDNN_comb">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.12/04 [396292]"/>
+    <Info name="Creator" value="viniciusmikuni"/>
+    <Info name="Date" value="Wed Mar 14 03:15:14 2018"/>
+    <Info name="Host" value="Darwin Viniciuss-MacBook-Pro.local 17.2.0 Darwin Kernel Version 17.2.0: Fri Sep 29 18:27:05 PDT 2017; root:xnu-4570.20.62~3/RELEASE_X86_64 x86_64"/>
+    <Info name="Dir" value="/Users/viniciusmikuni/cernbox/CMS/ttbbAnalysis/KinFitter/test/MVA/BDT"/>
+    <Info name="Training events" value="17338136"/>
+    <Info name="TrainingTime" value="8.84161983e+03"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="No">None</Option>
+    <Option name="H" modified="Yes">True</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="FilenameModel" modified="Yes">models/model_comb.h5</Option>
+    <Option name="FilenameTrainedModel" modified="No">MVA_weights/weights/TrainedModel_PyDNN_comb.h5</Option>
+    <Option name="BatchSize" modified="Yes">512</Option>
+    <Option name="NumEpochs" modified="Yes">50</Option>
+    <Option name="Verbose" modified="No">1</Option>
+    <Option name="ContinueTraining" modified="No">False</Option>
+    <Option name="SaveBestOnly" modified="No">True</Option>
+    <Option name="TriesEarlyStopping" modified="No">-1</Option>
+    <Option name="LearningRateSchedule" modified="No"/>
+  </Options>
+  <Variables NVar="44">
+    <Variable VarIndex="0" Expression="top1_m" Label="top1_m" Title="top1_m" Unit="" Internal="top1_m" Type="F" Min="8.89210205e+01" Max="2.59288483e+02"/>
+    <Variable VarIndex="1" Expression="top2_m" Label="top2_m" Title="top2_m" Unit="" Internal="top2_m" Type="F" Min="8.79547577e+01" Max="2.59323578e+02"/>
+    <Variable VarIndex="2" Expression="w1_m" Label="w1_m" Title="w1_m" Unit="" Internal="w1_m" Type="F" Min="1.61241627e+01" Max="1.53660309e+02"/>
+    <Variable VarIndex="3" Expression="w2_m" Label="w2_m" Title="w2_m" Unit="" Internal="w2_m" Type="F" Min="1.61241627e+01" Max="1.53899368e+02"/>
+    <Variable VarIndex="4" Expression="b1_pt" Label="b1_pt" Title="b1_pt" Unit="" Internal="b1_pt" Type="F" Min="3.00505104e+01" Max="8.41958435e+02"/>
+    <Variable VarIndex="5" Expression="b2_pt" Label="b2_pt" Title="b2_pt" Unit="" Internal="b2_pt" Type="F" Min="3.00000572e+01" Max="6.05642944e+02"/>
+    <Variable VarIndex="6" Expression="deltaRl1l2" Label="deltaRl1l2" Title="deltaRl1l2" Unit="" Internal="deltaRl1l2" Type="F" Min="3.83472770e-01" Max="4.19805336e+00"/>
+    <Variable VarIndex="7" Expression="deltaRq1q2" Label="deltaRq1q2" Title="deltaRq1q2" Unit="" Internal="deltaRq1q2" Type="F" Min="3.83472770e-01" Max="4.27374792e+00"/>
+    <Variable VarIndex="8" Expression="deltaRb1b2" Label="deltaRb1b2" Title="deltaRb1b2" Unit="" Internal="deltaRb1b2" Type="F" Min="3.82691145e-01" Max="5.58638334e+00"/>
+    <Variable VarIndex="9" Expression="deltaRb1w1" Label="deltaRb1w1" Title="deltaRb1w1" Unit="" Internal="deltaRb1w1" Type="F" Min="1.73881673e-03" Max="8.38610840e+00"/>
+    <Variable VarIndex="10" Expression="deltaRb2w2" Label="deltaRb2w2" Title="deltaRb2w2" Unit="" Internal="deltaRb2w2" Type="F" Min="2.05264916e-03" Max="8.38610840e+00"/>
+    <Variable VarIndex="11" Expression="deltaPhil1l2" Label="deltaPhil1l2" Title="deltaPhil1l2" Unit="" Internal="deltaPhil1l2" Type="F" Min="-3.14159107e+00" Max="3.14158630e+00"/>
+    <Variable VarIndex="12" Expression="deltaPhiq1q2" Label="deltaPhiq1q2" Title="deltaPhiq1q2" Unit="" Internal="deltaPhiq1q2" Type="F" Min="-3.14159107e+00" Max="3.14158630e+00"/>
+    <Variable VarIndex="13" Expression="deltaPhib1b2" Label="deltaPhib1b2" Title="deltaPhib1b2" Unit="" Internal="deltaPhib1b2" Type="F" Min="-3.14159131e+00" Max="3.14158630e+00"/>
+    <Variable VarIndex="14" Expression="deltaPhiw1w2" Label="deltaPhiw1w2" Title="deltaPhiw1w2" Unit="" Internal="deltaPhiw1w2" Type="F" Min="-3.14159250e+00" Max="3.14159250e+00"/>
+    <Variable VarIndex="15" Expression="deltaPhit1t2" Label="deltaPhit1t2" Title="deltaPhit1t2" Unit="" Internal="deltaPhit1t2" Type="F" Min="-3.14159250e+00" Max="3.14159250e+00"/>
+    <Variable VarIndex="16" Expression="q1b1_mass" Label="q1b1_mass" Title="q1b1_mass" Unit="" Internal="q1b1_mass" Type="F" Min="2.05666351e+01" Max="2.42710556e+02"/>
+    <Variable VarIndex="17" Expression="p1b2_mass" Label="p1b2_mass" Title="p1b2_mass" Unit="" Internal="p1b2_mass" Type="F" Min="1.69169846e+01" Max="2.42880203e+02"/>
+    <Variable VarIndex="18" Expression="deltaRb1q1" Label="deltaRb1q1" Title="deltaRb1q1" Unit="" Internal="deltaRb1q1" Type="F" Min="3.87205303e-01" Max="4.43753433e+00"/>
+    <Variable VarIndex="19" Expression="deltaRb2p1" Label="deltaRb2p1" Title="deltaRb2p1" Unit="" Internal="deltaRb2p1" Type="F" Min="3.82691145e-01" Max="4.69325924e+00"/>
+    <Variable VarIndex="20" Expression="deltaRb1top2" Label="deltaRb1top2" Title="deltaRb1top2" Unit="" Internal="deltaRb1top2" Type="F" Min="6.15026336e-04" Max="1.02034912e+01"/>
+    <Variable VarIndex="21" Expression="deltaRb2top1" Label="deltaRb2top1" Title="deltaRb2top1" Unit="" Internal="deltaRb2top1" Type="F" Min="6.15026336e-04" Max="1.02034912e+01"/>
+    <Variable VarIndex="22" Expression="deltaRb1w2" Label="deltaRb1w2" Title="deltaRb1w2" Unit="" Internal="deltaRb1w2" Type="F" Min="4.49015148e-04" Max="9.78294849e+00"/>
+    <Variable VarIndex="23" Expression="deltaRb2w1" Label="deltaRb2w1" Title="deltaRb2w1" Unit="" Internal="deltaRb2w1" Type="F" Min="2.08615675e-03" Max="9.78294849e+00"/>
+    <Variable VarIndex="24" Expression="mindeltaRb1q" Label="mindeltaRb1q" Title="mindeltaRb1q" Unit="" Internal="mindeltaRb1q" Type="F" Min="3.83472770e-01" Max="3.67888093e+00"/>
+    <Variable VarIndex="25" Expression="simple_chi2" Label="simple_chi2" Title="simple_chi2" Unit="" Internal="simple_chi2" Type="F" Min="7.75790482e-04" Max="1.84668255e+01"/>
+    <Variable VarIndex="26" Expression="mindeltaRb2p" Label="mindeltaRb2p" Title="mindeltaRb2p" Unit="" Internal="mindeltaRb2p" Type="F" Min="3.82691145e-01" Max="3.90591574e+00"/>
+    <Variable VarIndex="27" Expression="deltaEtal1l2" Label="deltaEtal1l2" Title="deltaEtal1l2" Unit="" Internal="deltaEtal1l2" Type="F" Min="-3.02853012e+00" Max="3.08491993e+00"/>
+    <Variable VarIndex="28" Expression="deltaEtaq1q2" Label="deltaEtaq1q2" Title="deltaEtaq1q2" Unit="" Internal="deltaEtaq1q2" Type="F" Min="-3.09540033e+00" Max="3.14835501e+00"/>
+    <Variable VarIndex="29" Expression="deltaEtab1b2" Label="deltaEtab1b2" Title="deltaEtab1b2" Unit="" Internal="deltaEtab1b2" Type="F" Min="-4.75232410e+00" Max="4.74831009e+00"/>
+    <Variable VarIndex="30" Expression="deltaEtaw1w2" Label="deltaEtaw1w2" Title="deltaEtaw1w2" Unit="" Internal="deltaEtaw1w2" Type="F" Min="-9.32509804e+00" Max="1.00644016e+01"/>
+    <Variable VarIndex="31" Expression="deltaEtat1t2" Label="deltaEtat1t2" Title="deltaEtat1t2" Unit="" Internal="deltaEtat1t2" Type="F" Min="-1.01340265e+01" Max="9.94844913e+00"/>
+    <Variable VarIndex="32" Expression="jet_QGL[0]" Label="jet_QGL[0]" Title="jet_QGL[0]" Unit="" Internal="jet_QGL_0_" Type="F" Min="1.00300601e-09" Max="1.00000000e+00"/>
+    <Variable VarIndex="33" Expression="jet_QGL[1]" Label="jet_QGL[1]" Title="jet_QGL[1]" Unit="" Internal="jet_QGL_1_" Type="F" Min="1.00300601e-09" Max="1.00000000e+00"/>
+    <Variable VarIndex="34" Expression="jet_QGL[2]" Label="jet_QGL[2]" Title="jet_QGL[2]" Unit="" Internal="jet_QGL_2_" Type="F" Min="1.00300601e-09" Max="1.00000000e+00"/>
+    <Variable VarIndex="35" Expression="jet_QGL[3]" Label="jet_QGL[3]" Title="jet_QGL[3]" Unit="" Internal="jet_QGL_3_" Type="F" Min="1.00300601e-09" Max="1.00000000e+00"/>
+    <Variable VarIndex="36" Expression="jet_QGL[4]" Label="jet_QGL[4]" Title="jet_QGL[4]" Unit="" Internal="jet_QGL_4_" Type="F" Min="1.00300601e-09" Max="1.00000000e+00"/>
+    <Variable VarIndex="37" Expression="jet_QGL[5]" Label="jet_QGL[5]" Title="jet_QGL[5]" Unit="" Internal="jet_QGL_5_" Type="F" Min="1.00300601e-09" Max="1.00000000e+00"/>
+    <Variable VarIndex="38" Expression="jet_CSV[0]" Label="jet_CSV[0]" Title="jet_CSV[0]" Unit="" Internal="jet_CSV_0_" Type="F" Min="3.42085361e-02" Max="1.00000000e+00"/>
+    <Variable VarIndex="39" Expression="jet_CSV[1]" Label="jet_CSV[1]" Title="jet_CSV[1]" Unit="" Internal="jet_CSV_1_" Type="F" Min="3.35376374e-02" Max="1.00000000e+00"/>
+    <Variable VarIndex="40" Expression="jet_CSV[2]" Label="jet_CSV[2]" Title="jet_CSV[2]" Unit="" Internal="jet_CSV_2_" Type="F" Min="3.42085361e-02" Max="1.00000000e+00"/>
+    <Variable VarIndex="41" Expression="jet_CSV[3]" Label="jet_CSV[3]" Title="jet_CSV[3]" Unit="" Internal="jet_CSV_3_" Type="F" Min="3.35376374e-02" Max="1.00000000e+00"/>
+    <Variable VarIndex="42" Expression="jet_CSV[4]" Label="jet_CSV[4]" Title="jet_CSV[4]" Unit="" Internal="jet_CSV_4_" Type="F" Min="3.42085361e-02" Max="1.00000000e+00"/>
+    <Variable VarIndex="43" Expression="jet_CSV[5]" Label="jet_CSV[5]" Title="jet_CSV[5]" Unit="" Internal="jet_CSV_5_" Type="F" Min="3.35376374e-02" Max="1.00000000e+00"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="0"/>
+  <MVAPdfs/>
+</MethodSetup>
