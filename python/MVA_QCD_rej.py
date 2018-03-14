@@ -36,10 +36,10 @@ ttbar = "(qgLR>0.9)"
 qcdcut = ROOT.TCut(qcd)
 restcut = ROOT.TCut(ttbar)
 
-file1 = ROOT.TFile('../../chi2Plots/ttbar_MVA.root')
-file2 = ROOT.TFile('../../chi2Plots/QCD_MVA.root')
-# file1 = ROOT.TFile('../../chi2Plots/Datasets/Skimmed_Ttbar.root')
-# file2 = ROOT.TFile('../../chi2Plots/Datasets/Skimmed_QCD.root')
+#file1 = ROOT.TFile('../../chi2Plots/ttbar_MVA.root')
+#file2 = ROOT.TFile('../../chi2Plots/QCD_MVA.root')
+file1 = ROOT.TFile('../../chi2Plots/Datasets/Skimmed_Ttbar.root')
+file2 = ROOT.TFile('../../chi2Plots/Datasets/Skimmed_QCD.root')
 if useData or useCWoLa: file2 = ROOT.TFile('../../chi2Plots/Datasets/Skimmed_Data.root')
 tree_s = file1.Get("tree")
 tree_b = file2.Get('tree')
@@ -89,8 +89,8 @@ dataset = ROOT.TMVA.DataLoader('../weights')
 ########################################
 # CSV + QGLR Cut
 ########################################
-vnames = ['tt_m', 'tt_pt', 'lq1_m', 'lq1_pt',  'lq2_m', 'lq2_pt',  'lp1_m', 'lp1_pt',  'lp2_m', 'lp2_pt',  'w1_m', 'w1_pt',  'w2_m', 'w2_pt',  'top1_m', 'top1_pt',  'top2_m', 'top2_pt',  'deltaRb1w1', 'deltaRb1w2',  'meanDeltaRbtag', 'prob_chi2', 'BDT_Comb', 'jet5pt',  'n_jets',  'deltaRb1q1', 'deltaRl1l2',  'deltaRb2w2', 'deltaRb2w1', 'simple_chi2', 'btagLR3b',  'mindeltaRb1q',  'deltaRb2p1', 'deltaRb2top1', 'aplanarity', 'p1b2_mass',   'q1b1_mass', 'ht',   'closest_mass', 'jets_dRavg','jets_dRmin',  'deltaRb1b2', 'mindeltaRb2p', 'meanCSVbtag',  'deltaRq1q2', 'all_mass','jet_CSV[0]','jet_CSV[1]','jet_CSV[2]','jet_CSV[3]','jet_CSV[4]','jet_CSV[5]']
-
+vnames = ['tt_m', 'tt_pt', 'lq1_m', 'lq1_pt',  'lq2_m', 'lq2_pt',  'lp1_m', 'lp1_pt',  'lp2_m', 'lp2_pt',  'w1_m', 'w1_pt',  'w2_m', 'w2_pt',  'top1_m', 'top1_pt',  'top2_m', 'top2_pt',  'deltaRb1w1', 'deltaRb1w2',  'meanDeltaRbtag', 'prob_chi2', 'jet5pt',  'n_jets',  'deltaRb1q1', 'deltaRl1l2',  'deltaRb2w2', 'deltaRb2w1', 'btagLR3b',  'mindeltaRb1q',  'deltaRb2p1', 'deltaRb2top1', 'aplanarity', 'p1b2_mass',   'q1b1_mass', 'ht',   'closest_mass', 'jets_dRavg',  'deltaRb1b2', 'mindeltaRb2p', 'meanCSVbtag',  'deltaRq1q2', 'all_mass','jet_CSV[0]','jet_CSV[1]','jet_CSV[2]','jet_CSV[3]','jet_CSV[4]','jet_CSV[5]']
+# 'BDT_Comb', 'prob_chi2','jets_dRmin'
 
 ########################################
 # Deep + Mean b DeltaR Cut
@@ -174,8 +174,8 @@ else:
         dataset.AddBackgroundTree(tree_b)
         dataset.PrepareTrainingAndTestTree(sigcut+ restcut,sigcut +qcdcut,
                                            ":".join(["SplitMode=Random",
-                                                     "TrainTestSplit_Signal=0.7",
-                                                     "TrainTestSplit_Background=0.7",
+                                                     "TrainTestSplit_Signal=0.8",
+                                                     "TrainTestSplit_Background=0.8",
                                                      "NormMode=None",
                                                      "!V"
                                            ]))
@@ -238,7 +238,7 @@ else:
     PyDNN_Opt(modelname, len(usevar))
 
     #"BDT","PyForest,"PyDNN""
-    UseMethod = ["PyDNN"]
+    UseMethod = ["PyDNN","BDT"]
     mcat = {}
 
 

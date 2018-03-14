@@ -11,7 +11,7 @@ batchs = 512
 #nneurons = 64
 def PyDNN_Opt(bkg, nvar,ncat = 2,activation = 'selu',nneurons=64,opt=Adam()):
     act = 'softmax' 
-    lss = 'categorical_crossentropy' if ncat > 2 else 'binary_crossentropy'
+    lss = 'categorical_crossentropy' if ncat > 1 else 'binary_crossentropy'
     #opt = RMSprop(lr=1e-3)
     model = Sequential()
 
@@ -22,7 +22,7 @@ def PyDNN_Opt(bkg, nvar,ncat = 2,activation = 'selu',nneurons=64,opt=Adam()):
 
     model.add(Dense(nneurons,input_dim = nvar,kernel_initializer='lecun_normal', activation='selu',bias_initializer='zeros'))
     model.add(AlphaDropout(0.1))
-    model.add(Dense(nneurons, activation='selu',kernel_initializer='lecun_normal',bias_initializer='zeros'))
+    model.add(Dense(32, activation='selu',kernel_initializer='lecun_normal',bias_initializer='zeros'))
     model.add(AlphaDropout(0.05))
 
     
