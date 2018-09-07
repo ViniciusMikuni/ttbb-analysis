@@ -46,7 +46,7 @@ else:
     asi = 0
     bestcut = 0
 
-    
+
     rt.ROOT.EnableImplicitMT()
     TDF = rt.ROOT.Experimental.TDataFrame
     dbkg = TDF('tree',processfiles['data'])
@@ -56,13 +56,12 @@ else:
         for l, c in enumerate(allcuts):
             sig = dsig.Filter(c).Count().GetValue()*dscale['ttbar']
             bkg = dbkg.Filter(c).Count().GetValue() - sig
-        
+
             if sig/sqrt(sig+bkg)>asi:
                 asi = sig/sqrt(sig+bkg)
                 bestcut = l
-                
-        print allcuts[bestcut], 'with significance: ',asi
-            
-                
-    watch.Print()
 
+        print allcuts[bestcut], 'with significance: ',asi
+
+
+    watch.Print()

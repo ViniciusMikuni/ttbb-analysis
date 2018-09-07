@@ -12,22 +12,21 @@ from Estimate_QCD import Estimate_QCD
 #####################################################
 
 
+def Calculate_qwfrac(tree,weight='',proc='',cut='qgLR > 0.636581'):
+    wnom = weight.replace('qgweight*','')
+    n_nom = tree.Draw('',wnom+'*'+cut)
+    n_qglr = tree.Draw('',weight+'*'+cut)
+    qg_fac = float(n_nom)/n_qglr if n_qglr >0 else 1.0
+    print  proc,':',qg_fac
+    return qg_fac
 
 
-def Make_Hists(config,sysname = '',direction='',is_weight = False,tree={}, is_overflow=True):
-    fname = config.get('GENERAL','hfile')
-    verbose = config.getboolean('GENERAL','verbose')
-    calc_qwfac=config.getboolean('GENERAL','calc_qwfac')
-    setQCD0error=config.getboolean('GENERAL','setQCD0error')
-    QCD_fname = config.get('GENERAL','QCDfile')
-    weight = config.get('GENERAL','weight')
-    topweight=weight+'&&topweight'
-    interest_var=ast.literal_eval(config.get('GENERAL','var'))
-    add_cut = ''
-    for item, cut in config.items('CUT'):
-        add_cut+=item+sysname+direction+cut+'&&'
-    add_cut=add_cut[:-2] #Remove last &&
-            
+def Make_Hists(interest_var=[],sysname = '',direction='',is_weight = False, processlist=[],tree={},add_cut='', is_overflow=True,fname = 'hCard_0.root',verbose = True):
+    #addCut = 'n_jets >=8 && simple_chi2<34.4046 && BDT_CWoLa > 0.221061 && BDT_Comb > 0.102203 && qgLR > 0.722416'
+    calc_qwfac=True
+    setQCD0error = False
+    QCD_fname = 'QCD_Estimate_CR.root'
+
     dnames = {'data':'data_obs','ttlf':'ttlf','diboson':'VV','ttV':'ttV','VJ':'VJ','stop':'stop','QCD':'QCD','ttcc':'ttcc','ttbb':'ttbb','tt2b':'tt2b','ttb':'ttb'}
     hname = OrderedDict(sorted(dnames.items(), key=lambda t: t[0]))
     bkgs_ = list(filter(lambda x: x not in ['QCD','data'], processlist))
@@ -35,12 +34,11 @@ def Make_Hists(config,sysname = '',direction='',is_weight = False,tree={}, is_ov
     hlist = []
 
 
+    weight = 'weight*puweight*btagweight*qgweight*trigWeight(ht,jet5pt,nBCSVM)'
     if is_weight:
-        weight_name = sysname[1:].partition('_')[0] #btagweight
+        weight_name = sysname[1:].partition('_')[0]
         if 'top' not in weight_name:
             weight = weight.replace(weight_name,sysname[1:]+'_'+direction)
-        else:
-            topweight +=direction
 
     if verbose: print 'weight: ', weight
 
@@ -60,7 +58,7 @@ def Make_Hists(config,sysname = '',direction='',is_weight = False,tree={}, is_ov
             if proc == 'QCD':
                 Estimate_QCD(var,sysname if is_weight == False else '',direction if is_weight == False else '',weight,bkgs_,tree,fout = QCD_fname)
                 f_QCD = rt.TFile(QCD_fname,"READ")
-                h = f_QCD.Get('QCD{0}{1}'.format(config['GENERAL']['Reg'],var))
+                h = f_QCD.Get('QCDSR'+var)
                 if setQCD0error:
                     for bin in range(h.GetSize()-1):
                         h.SetBinError(bin+1,0)
@@ -69,7 +67,7 @@ def Make_Hists(config,sysname = '',direction='',is_weight = False,tree={}, is_ov
             elif proc in ttplot:
                 topweight = weight + "*topweight"
                 if 'top' in sysname:
-                    topweight = topweight.replace('topweight',sysname[1:]+direction)
+                    topweight = topweight.replace('topweight',sysname[1:]+'_'+direction)
                 tree[proc].Draw(var + '>>'+ 'h'+proc+ str(vartitle[var.partition('_')[0]][1]),topweight+"*("+add_cut+"&&"+ttCls[proc] + ")")
                 h = rt.gDirectory.Get('h'+proc).Clone(hname[proc]+nuis_name)
                 if is_overflow: AddOverflow(h)
