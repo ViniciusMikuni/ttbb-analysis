@@ -1,0 +1,91 @@
+imax 1 number of bins
+jmax 10 number of processes minus 1
+kmax 65 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes * SR hCard_bLR_noprob_LN_qg.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SR  
+observation  -1
+----------------------------------------------------------------------------------------------------------------------------------
+bin                                    SR             SR             SR             SR            SR             SR             SR             SR             SR             SR             SR          
+process                                ttbb           tt2b           ttb            stop          ttcc           VJ             ttV            ttH            VV             QCD            ttlf         
+process                                10             9             5              1              2              3              4              0              6              7              8            
+rate                                    -1             -1             -1            -1             -1             -1             -1             -1             -1             -1             -1
+----------------------------------------------------------------------------------------------------------------------------------
+lumi                  shape          1.0             1.0            1.0            1.0            1.0            1.0            1.0            1.0              1.0           1.0          1.0            
+pdf_gg                shape          1.0             1.0            1.0             -             1.0             -             1.0             -                -            1.0          1.0            
+pdf_qqbar             shape           -               -              -              -              -             1.0            1.0             -               1.0           1.0           -            
+pdf_qg                shape           -               -              -             1.0             -              -              -              -                -            1.0           -            
+QCD_scale_ttH         shape           -               -              -              -              -              -              -             1.0               -            1.0           -            
+QCD_scale_tt          shape           1.0            1.0            1.0             -             1.0             -             1.0             -                -            1.0          1.0     
+QCD_scale_t           shape            -              -              -             1.0             -              -              -              -                -            1.0           -            
+QCD_scale_V           shape            -              -              -              -              -             1.0             -              -                -            1.0           -            
+QCD_scale_VV          shape            -              -              -              -              -              -              -              -               1.0           1.0           -       
+bgnorm_ttbarPlusCCbar shape            -              -              -              -              -              -              -              -                -            1.0           -     
+#bgnorm_ttbb           shape            -              -              -              -              -              -              -              -                -            1.0           -     
+#bgnorm_ttb            shape            -              -              -              -              -              -              -              -                -            1.0           -     
+#bgnorm_tt2b           shape            -              -              -              -              -              -              -              -                -            1.0           -     
+ttbb_FSR              shape           1.0             -              -              -              -              -              -              -                -            1.0           -     
+ttbb_ISR              shape           1.0             -              -              -              -              -              -              -                -            1.0           -     
+ttbb_tune             shape           1.0             -              -              -              -              -              -              -                -            1.0           -     
+ttbb_hdamp            shape           1.0             -              -              -              -              -              -              -                -            1.0           -     
+tt2b_FSR              shape            -             1.0             -              -              -              -              -              -                -            1.0           -     
+tt2b_ISR              shape            -             1.0             -              -              -              -              -              -                -            1.0           -     
+tt2b_tune             shape            -             1.0             -              -              -              -              -              -                -            1.0           -     
+tt2b_hdamp            shape            -             1.0             -              -              -              -              -              -                -            1.0           -     
+ttb_FSR               shape            -              -             1.0             -              -              -              -              -                -            1.0           -     
+ttb_ISR               shape            -              -             1.0             -              -              -              -              -                -            1.0           -     
+ttb_tune              shape            -              -             1.0             -              -              -              -              -                -            1.0           -     
+ttb_hdamp             shape            -              -             1.0             -              -              -              -              -                -            1.0           -     
+ttlf_FSR              shape            -              -              -              -              -              -              -              -                -            1.0          1.0     
+ttlf_ISR              shape            -              -              -              -              -              -              -              -                -            1.0          1.0     
+ttlf_tune             shape            -              -              -              -              -              -              -              -                -            1.0          1.0     
+ttlf_hdamp            shape            -              -              -              -              -              -              -              -                -            1.0          1.0     
+ttcc_FSR              shape            -              -              -              -             1.0             -              -              -                -            1.0           -     
+ttcc_ISR              shape            -              -              -              -             1.0             -              -              -                -            1.0           -     
+ttcc_tune             shape            -              -              -              -             1.0             -              -              -                -            1.0           -     
+ttcc_hdamp            shape            -              -              -              -             1.0             -              -              -                -            1.0           -     
+CMS_pu_Weight         shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_qg_Weight         shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_top_Weight        shape           1.0           1.0            1.0             -              1.0            -              -              -                -             1.0          1.0       
+CMS_btag_hf           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_btag_cferr1       shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_btag_cferr2       shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_btag_lf           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_btag_lfstats2     shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_btag_lfstats1     shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_btag_hfstats2     shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_btag_hfstats1     shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+#CMS_btag_jes          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0   
+CMS_RelativeStatEC_j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativeStatHF_j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_PileUpDataMC_j            shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_PileUpPtRef_j             shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_PileUpPtBB_j              shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_PileUpPtEC1_j             shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+#CMS_PileUpPtEC2_j             shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_PileUpPtHF_j              shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativeStatFSR_j         shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativeFSR_j             shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_AbsoluteScale_j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+#CMS_AbsoluteFlavMap_j         shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_AbsoluteMPFBias_j         shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_Fragmentation_j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_SinglePionECAL_j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_SinglePionHCAL_j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_FlavorQCD_j               shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_TimePtEta_j               shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativeJEREC1_j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativeJEREC2_j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativeJERHF_j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativePtBB_j            shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativePtEC1_j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativePtEC2_j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_RelativePtHF_j            shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+CMS_AbsoluteStat_j            shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+#CMS_SubTotalPileUp_j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+#CMS_JER_j                     shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            1.0          1.0
+
+R rateParam SR QCD 1
+SR autoMCStats 0 0 1
+theory group = pdf_gg pdf_qqbar pdf_qg QCD_scale_ttH QCD_scale_tt QCD_scale_t QCD_scale_V QCD_scale_VV ttbb_FSR ttbb_ISR ttbb_hdamp ttbb_tune tt2b_FSR tt2b_ISR tt2b_hdamp tt2b_tune ttb_FSR ttb_ISR ttb_hdamp ttb_tune ttcc_FSR ttcc_ISR ttcc_hdamp ttcc_tune ttlf_FSR ttlf_ISR ttlf_hdamp ttlf_tune

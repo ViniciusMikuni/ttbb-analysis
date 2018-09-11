@@ -1,0 +1,67 @@
+imax 1 number of bins
+jmax 10 number of processes minus 1
+kmax 47 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes * CR1 hCard_CRnb.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+----------------------------------------------------------------------------------------------------------------------------------
+bin          CR1  
+observation  -1
+----------------------------------------------------------------------------------------------------------------------------------
+bin                                    CR1            CR1            CR1            CR1           CR1            CR1            CR1            CR1            CR1            CR1            CR1          
+process                                ttbb           tt2b           ttb            stop          ttcc           VJ             ttV            ttH            VV             QCD            ttlf         
+process                                10             9             7              1              2              3              4              5              6              0              8            
+rate                                    -1             -1             -1            -1             -1             -1             -1             -1             -1             -1             -1
+----------------------------------------------------------------------------------------------------------------------------------
+lumi_13TeV              lnN             1.025         1.025          1.025          1.025           1.025          1.025         1.025         1.025            1.025          -        1.025
+pdf_gg                  lnN             1.04          1.04           1.04            -              1.04           -             1.04            -                -              -          1.04            
+pdf_qqbar               lnN             -              -              -              -              -              1.04          1.02            -              1.02             -           -            
+pdf_qg                  lnN             -              -              -             1.03            -              -              -              -                -              -           -            
+QCDscale_ttH            lnN             -              -              -              -              -              -              -          0.908/1.058          -              -           -            
+QCDscale_tt             lnN             0.96/1.02     0.96/1.02      0.96/1.02      -              0.96/1.02       -              0.88/1.13      -                -              -          0.96/1.02     
+QCDscale_t              lnN             -              -              -              0.98/1.03      -              -              -              -                -              -           -            
+QCDscale_V              lnN             -              -              -              -              -              1.01           -              -                -              -           -            
+QCDscale_VV             lnN             -              -              -              -              -              -              -              -                1.02           -           -       
+bgnorm_ttbarPlusCCbar   lnN             -              -              -              -              1.5            -              -              -                -              -           -     
+CMS_pu                shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0
+#CMS_qg                shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_top               shape           1.0           1.0            1.0             -              1.0            -              -              -                -             -          1.0       
+CMS_ttbb_hf           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_ttbb_cferr1       shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_ttbb_cferr2       shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_ttbb_lf           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_ttbb_lfstats2     shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_ttbb_lfstats1     shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_ttbb_jes          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativeStatEC__j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativeStatHF__j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_PileUpDataMC__j            shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_PileUpPtRef__j             shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_PileUpPtBB__j              shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0    
+CMS_PileUpPtEC1__j             shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_PileUpPtEC2__j             shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_PileUpPtHF__j              shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativeStatFSR__j         shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativeFSR__j             shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_AbsoluteScale__j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_AbsoluteFlavMap__j         shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_AbsoluteMPFBias__j         shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_Fragmentation__j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_SinglePionECAL__j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_SinglePionHCAL__j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_FlavorQCD__j               shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_TimePtEta__j               shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativeJEREC1__j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativeJEREC2__j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativeJERHF__j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativePtBB__j            shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativePtEC1__j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativePtEC2__j           shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_RelativePtHF__j            shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_AbsoluteStat__j            shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_SubTotalPileUp__j          shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+CMS_JER__j                     shape           1.0           1.0            1.0            1.0             1.0            1.0            1.0           1.0              1.0            -          1.0   
+
+
+R rateParam CR1 QCD 1
+#CR1 autoMCStats 0 0 1
+
