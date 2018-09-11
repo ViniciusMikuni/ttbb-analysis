@@ -5,6 +5,7 @@ from itertools import permutations, combinations
 import numpy as np
 from os import environ
 environ['KERAS_BACKEND'] = 'theano'
+import lhapdf
 import re
 import ConfigParser
 import ast
@@ -106,13 +107,33 @@ def MeasureNominal(t,mytree,pass_sys):
                   mytree.variables['btagweight_lfstats1_Up'][0] =t.btagWeightCSV_up_lfstats1
                   mytree.variables['btagweight_hfstats2_Up'][0] =t.btagWeightCSV_up_hfstats2
                   mytree.variables['btagweight_hfstats1_Up'][0] =t.btagWeightCSV_up_hfstats1
-
                   mytree.variables['btagweight_jesPileUpDataMC_Up'][0] =t.btagWeightCSV_up_jesPileUpDataMC
+                  mytree.variables['LHEPDFweight'][0]=1.0
+                  mytree.variables['LHE_factweight'][0]=1.0
+                  mytree.variables['LHE_renormweight'][0]=1.0
+
             else:
                   mytree.variables['weight'][0] = 1
 
 
             ntopjets = ntoptaggedjets= 0
+            if sample == 'ttbar':
+                  nnpdfSet = lhapdf.getPDFSet("NNPDF30_nlo_as_0118")
+                  pdfset = [1.0]
+                  mytree.variables['LHE_factweight_Up'][0]=t.LHE_weights_scale_wgt[0]
+                  mytree.variables['LHE_factweight_Down'][0]=t.LHE_weights_scale_wgt[1]
+                  mytree.variables['LHE_renormweight_Up'][0]=t.LHE_weights_scale_wgt[2]
+                  mytree.variables['LHE_renormweight_Down'][0]=t.LHE_weights_scale_wgt[3]
+                  #for nlhe in range(t.nLHE_weights_scale):
+                  #      mytree.variables['LHE_scale'][nlhe]=t.LHE_weights_scale_wgt[nlhe]
+
+                  for nlhe in range(t.nLHE_weights_pdf-2):
+                        pdfset.append(t.LHE_weights_pdf_wgt[nlhe])
+
+                  pdfUnc = nnpdfSet.uncertainty(pdfset)
+
+                  mytree.variables['LHEPDFweight_Up'][0]= pdfUnc.central + pdfUnc.errplus
+                  mytree.variables['LHEPDFweight_Down'][0]=pdfUnc.central - pdfUnc.errminus
             
 
             
@@ -377,6 +398,7 @@ if __name__ == "__main__":
             filename = sys.argv[1]
             sample = str(sys.argv[2])
       else: print 'Missing arguments'
+      print sample
       # config = ConfigParser.ConfigParser()
       # config.optionxform = str
       # config.read('all_perm.cfg')
@@ -394,11 +416,7 @@ if __name__ == "__main__":
             emin = map(int, re.findall(r'\d+', lines[0]))[0]
             emax = map(int, re.findall(r'\d+', lines[0]))[1]
 
-      foutname = 'Skim_'
-      foutname += sample + '_'
-      foutname += str(emax)+'.root'
-      fout = TFile(foutname,'recreate')
-
+      
       if sample == 'ttbar':is_ttbar = 1
       else: is_ttbar = 0
       if emax == 0:
@@ -437,7 +455,8 @@ if __name__ == "__main__":
 
                               ht = eval("t.ht{0}{1}".format(syst,direc))
                               jetpt5 = 0
-                              if syst == '_JER': jetpt5 = eval("t.jets_pt[5]*t.jets_corr{0}{1}[5]/t.jets_corr_JER[5]".format(syst,direc))
+                              if syst == '_JER': 
+                                  jetpt5 = eval("t.jets_pt[5]*t.jets_corr{0}{1}[5]/t.jets_corr_JER[5]".format(syst,direc))
                               else: jetpt5 = eval("t.jets_pt[5]*t.jets_corr{0}{1}[5]/t.jets_corr[5]".format(syst,direc))
 
                               if sample != 'ttH':
@@ -496,7 +515,11 @@ if __name__ == "__main__":
             #     mytree.Print()
             if e > emax: break
       watch.Print()
-      if tkin.GetEntries()>0:
-            tkin.Write()
-            fout.Write()
-            fout.Close()
+      if e != emin:
+          foutname = 'Skim_'
+          foutname += sample + '_'
+          foutname += str(emax)+'.root'
+          fout = TFile(foutname,'recreate')
+          tkin.Write()
+          fout.Write()
+          fout.Close()

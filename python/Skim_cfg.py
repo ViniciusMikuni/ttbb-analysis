@@ -40,20 +40,24 @@ def AddProcessChain(sample,t):
       if sample == 'ttbar':
             #f2 = ROOT.TFile.Open('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root')
             #f2.Close()
-            t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root')
+            t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8_PDF.root')
       elif sample == 'ttbar_fast':
             #f2 = ROOT.TFile.Open('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root')
             #f2.Close()
             #t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.root')
             t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8_v2.root')
-      elif sample == 'QCD':
-            t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
-            t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
-            t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
+      elif sample == 'QCD300':
             t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
+      elif sample == 'QCD500':
             t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
+      elif sample == 'QCD700':
             t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
-
+      elif sample == 'QCD1000':
+            t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT1000to1500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
+      elif sample == 'QCD1500':
+            t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT1500to2000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
+      elif sample == 'QCD200':
+            t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/QCD_HT2000toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root')
       elif sample == 'data':
             t.Add('/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/tth/JetHT.root')
             
@@ -204,7 +208,12 @@ tvars = {
     'trigweight': [1 , 'F'],
     'trigweight_Up': [1 , 'F'],
     'trigweight_Down': [1 , 'F'],
-    'LHE_scale':[6,'F'],
+    'LHE_renormweight':[1,'F'],
+    'LHE_renormweight_Up':[1,'F'],
+    'LHE_renormweight_Down':[1,'F'],
+    'LHE_factweight':[1,'F'],
+    'LHE_factweight_Up':[1,'F'],
+    'LHE_factweight_Down':[1,'F'],
     'LHEPDFweight':[1,'F'],
     'LHEPDFweight_Down':[1,'F'],
     'LHEPDFweight_Up':[1,'F'],
@@ -690,35 +699,36 @@ MVA_Only = {
 }
 
 sys_list=[
-    '_RelativeStatEC',
-    '_RelativeStatHF',
-    '_PileUpDataMC',
-    '_PileUpPtRef',
-    '_PileUpPtBB',
-    '_PileUpPtEC1',
-    '_PileUpPtEC2',
-    '_PileUpPtHF',
-    '_RelativeStatFSR',
-    '_RelativeFSR',
-    '_AbsoluteScale',
-    '_AbsoluteFlavMap',
-    '_AbsoluteMPFBias',
-    '_Fragmentation',
-    '_SinglePionECAL',
-    '_SinglePionHCAL',
-    '_FlavorQCD',
-    '_TimePtEta',
-    '_RelativeJEREC1',
-    '_RelativeJEREC2',
-    '_RelativeJERHF',
-    '_RelativePtBB',
-    '_RelativePtEC1',
-    '_RelativePtEC2',
-    '_RelativePtHF',
-    '_SubTotalPileUp',
-    '_JER',
-    '_AbsoluteStat',
-    '_Total',
+
+'_RelativeStatEC',
+'_RelativeStatHF',
+'_PileUpDataMC',
+'_PileUpPtRef',
+'_PileUpPtBB',
+'_PileUpPtEC1',
+'_PileUpPtEC2',
+'_PileUpPtHF',
+'_RelativeStatFSR',
+'_RelativeFSR',
+'_AbsoluteScale',
+'_AbsoluteFlavMap',
+'_AbsoluteMPFBias',
+'_Fragmentation',
+'_SinglePionECAL',
+'_SinglePionHCAL',
+'_FlavorQCD',
+'_TimePtEta',
+'_RelativeJEREC1',
+'_RelativeJEREC2',
+'_RelativeJERHF',
+'_RelativePtBB',
+'_RelativePtEC1',
+'_RelativePtEC2',
+'_RelativePtHF',
+'_SubTotalPileUp',
+'_JER',
+'_AbsoluteStat',
+'_Total',
 ]
 
 

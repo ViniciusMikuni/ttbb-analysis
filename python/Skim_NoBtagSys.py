@@ -109,14 +109,20 @@ def MeasureNominal(t,mytree,pass_sys):
                   mytree.variables['btagweight_lfstats1_Up'][0] =t.btagWeightCSV_up_lfstats1
                   mytree.variables['btagweight_jesPileUpDataMC_Up'][0] =t.btagWeightCSV_up_jesPileUpDataMC
                   mytree.variables['LHEPDFweight'][0]=1.0
+                  mytree.variables['LHE_factweight'][0]=1.0
+                  mytree.variables['LHE_renormweight'][0]=1.0
             else:
                   mytree.variables['weight'][0] = 1
 
-            if 'pdf' in sample:
+            if 'ttbar' in sample:
                   nnpdfSet = lhapdf.getPDFSet("NNPDF30_nlo_as_0118")
                   pdfset = [1.0]
-                  for nlhe in range(t.nLHE_weights_scale):
-                        mytree.variables['LHE_scale'][nlhe]=t.LHE_weights_scale_wgt[nlhe]
+                  mytree.variables['LHE_factweight_Up'][0]=t.LHE_weights_scale_wgt[0]
+                  mytree.variables['LHE_factweight_Down'][0]=t.LHE_weights_scale_wgt[1]
+                  mytree.variables['LHE_renormweight_Up'][0]=t.LHE_weights_scale_wgt[2]
+                  mytree.variables['LHE_renormweight_Down'][0]=t.LHE_weights_scale_wgt[3]
+                  #for nlhe in range(t.nLHE_weights_scale):
+                  #      mytree.variables['LHE_scale'][nlhe]=t.LHE_weights_scale_wgt[nlhe]
 
                   for nlhe in range(t.nLHE_weights_pdf-2):
                         pdfset.append(t.LHE_weights_pdf_wgt[nlhe])
@@ -174,7 +180,7 @@ def MeasureNominal(t,mytree,pass_sys):
 
 
 
-            if nbjets == 3:
+            if t.nBCSVM == 3:
                   mytree.variables['qgLR'][0] = qgLR3b
                   # if t.mem_ttbb_FH_4w2h1t_p  > 0: mytree.variables['memttbb'][0] = -TMath.Log10(t.mem_ttbb_FH_4w2h1t_p)
                   # else: mytree.variables['memttbb'][0] = -10
@@ -183,7 +189,7 @@ def MeasureNominal(t,mytree,pass_sys):
                   #       mytree.variables['qgLR'][0] = t.qg_LR_3b_flavour_4q_0q
                   # elif nljets >= 5:
                   #       mytree.variables['qgLR'][0] = t.qg_LR_3b_flavour_5q_0q
-            if nbjets >= 4:
+            if t.nBCSVM >= 4:
                   mytree.variables['qgLR'][0] = qgLR4b
                   # if t.mem_ttbb_FH_4w2h2t_p  > 0: mytree.variables['memttbb'][0] = -TMath.Log10(t.mem_ttbb_FH_4w2h2t_p)
                   # else: mytree.variables['memttbb'][0] = -10
@@ -197,6 +203,14 @@ def MeasureNominal(t,mytree,pass_sys):
             if sample != 'ttH':
                 tthcut = t.json and (t.HLT_ttH_FH or t.HLT_BIT_HLT_PFJet450_v) and t.ht>500 and t.jets_pt[5]>40
             else:tthcut = t.json and (t.HLT_ttH_FH) and t.ht>500 and t.jets_pt[5]>40
+            if sample == 'ttbar':
+                for itophad in range(t.ngenTopHad):
+                    mytree.variables['genTopHad_pt'][itophad] = t.genTopHad_pt[itophad]
+                mytree.variables['topweight'][0] = np.exp(0.5*(t.ngenTopLep*0.0843616-0.000743051*np.sum(t.genTopLep_pt)+t.ngenTopHad*0.0843616-0.000743051*np.sum(t.genTopHad_pt)))*(t.jets_pt[0]/t.jets_pt[0])
+                mytree.variables['topweight_Up'][0] = np.exp(0.5*(t.ngenTopLep*0.00160296-0.000411375*sum(t.genTopLep_pt)+t.ngenTopHad*0.00160296- 0.000411375*sum(t.genTopHad_pt)))
+                mytree.variables['topweight_Down'][0] = np.exp(0.5*(t.ngenTopLep*0.16712-0.00107473*sum(t.genTopLep_pt)+t.ngenTopHad*0.16712-0.00107473*sum(t.genTopHad_pt)))
+
+
             if not (t.njets >= 7 and t.nBCSVM >=2 and tthcut and t.njets<=14):return 0
 
 
@@ -291,12 +305,6 @@ def MeasureNominal(t,mytree,pass_sys):
 
 
 
-            if sample == 'ttbar':
-                  for itophad in range(t.ngenTopHad):
-                        mytree.variables['genTopHad_pt'][itophad] = t.genTopHad_pt[itophad]
-                  mytree.variables['topweight'][0] = np.exp(0.5*(t.ngenTopLep*0.0843616-0.000743051*np.sum(t.genTopLep_pt)+t.ngenTopHad*0.0843616-0.000743051*np.sum(t.genTopHad_pt)))*(t.jets_pt[0]/t.jets_pt[0])
-                  mytree.variables['topweight_Up'][0] = np.exp(0.5*(t.ngenTopLep*0.00160296-0.000411375*sum(t.genTopLep_pt)+t.ngenTopHad*0.00160296- 0.000411375*sum(t.genTopHad_pt)))
-                  mytree.variables['topweight_Down'][0] = np.exp(0.5*(t.ngenTopLep*0.16712-0.00107473*sum(t.genTopLep_pt)+t.ngenTopHad*0.16712-0.00107473*sum(t.genTopHad_pt)))
             #print 'nominal'
             #mytree.Print(useQCD)
             mytree.variables['BDT_CWoLa'][0] = readerQCD.EvaluateMVA("BDT_QCD")
@@ -309,14 +317,6 @@ def MeasureNominal(t,mytree,pass_sys):
 
 def MeasureSystematics(t,mytree,sys,direc):
       jets_ = ROOT.vector('TLorentzVector')()
-      sysvars = ['nBCSVM','qgLR','btagLR4b','BDT_CWoLa','BDT_Comb','prob_chi2','top1_m','n_jets']
-
-
-      for var in sysvars:
-            sysvar = var+sys+direc
-            if not mytree.HaveBranch(sysvar):
-                  mytree.variables[sysvar]=array('f',[-10])
-                  mytree.tree.Branch(sysvar,mytree.variables[sysvar],sysvar+'/F')
 
       bestcomb_ = []
       bpos_ = []
@@ -470,13 +470,14 @@ def UpdateVariables(comb,jet,var,MVA_Only,isSys=False):
                               var['addJet_pt'][ind] = t.jets_pt[addjets[csvrank[rev]]]
                               var['addJet_eta'][ind] = t.jets_eta[addjets[csvrank[rev]]]
                               var['addJet_phi'][ind] = t.jets_phi[addjets[csvrank[rev]]]
+                              var['addJet_mass'][ind] = t.jets_mass[addjets[csvrank[rev]]]
                               var['addJet_QGL'][ind] = t.jets_qgl[addjets[csvrank[rev]]]
 
                         if len(csvrank)>=2:
                               var['addJet_deltaR'][0] = jet[addjets[csvrank[0]]].DeltaR(jet[addjets[csvrank[1]]])
                               var['addJet_deltaPhi'][0] = jet[addjets[csvrank[0]]].DeltaPhi(jet[addjets[csvrank[1]]])
                               var['addJet_deltaEta'][0] = jet[addjets[csvrank[0]]].Eta() -jet[addjets[csvrank[1]]].Eta()
-                              var['addJet_mass'][0] = (jet[addjets[csvrank[0]]]+jet[addjets[csvrank[1]]]).M()
+                              #var['addJet_mass'][0] = (jet[addjets[csvrank[0]]]+jet[addjets[csvrank[1]]]).M()
                               MVA_Only['addJet_CSV[1]'][0] = t.jets_btagCSV[addjets[csvrank[1]]]
                               MVA_Only['addJet_QGL[1]'][0] = t.jets_qgl[addjets[csvrank[1]]]
                               MVA_Only['addJet_pt[1]'][0] = t.jets_pt[addjets[csvrank[1]]]
@@ -573,10 +574,7 @@ if __name__ == "__main__":
             emin = map(int, re.findall(r'\d+', lines[0]))[0]
             emax = map(int, re.findall(r'\d+', lines[0]))[1]
 
-      foutname = 'Skim_'
-      foutname += sample + '_'
-      foutname += str(emax)+'.root'
-      fout = TFile(foutname,'recreate')
+      
 
       if sample == 'ttbar':is_ttbar = 1
       else: is_ttbar = 0
@@ -631,14 +629,14 @@ if __name__ == "__main__":
 
       weightFileBDT_Comb = '/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/weights/TMVAClassification_BDTP_comb.weights.xml' #30% of sample
       weightFileBDT_QCD = '/mnt/t3nfs01/data01/shome/vmikuni/CMSSW_9_3_0/src/ttbbAnalysis/KinFitter/test/weights/TMVAClassification_BDTCW_QCD_Test_CWoLa.weights.xml'
-
+      sysvars = ['nBCSVM','qgLR','btagLR4b','BDT_CWoLa','BDT_Comb','prob_chi2','top1_m','n_jets','top2_m']
       reader.BookMVA('BDT_Comb',weightFileBDT_Comb)
       readerQCD.BookMVA('BDT_QCD',weightFileBDT_QCD)
       # print 'starting'
       # watch.Print()
       
       for e in range(emin,emax):
-            if not t.GetEntry(e): continue
+            if not t.GetEntry(e): break
       #for e,event in enumerate(t):
             #if e < emin: continue
             if e%100==0: print 'Running entry: ',e, ' of ',emax, ' entries'
@@ -650,18 +648,22 @@ if __name__ == "__main__":
 
             if 'data' not in sample and 'theory' not in sample and 'QCD' not in sample:
                   for syst in sys_list:
-
                         for direc in ['Up','Down']:
-                              ht = eval("t.ht{0}{1}".format(syst,direc))
-                              jetpt5 = 0
-                              if syst == '_JER': jetpt5 = eval("t.jets_pt[5]*t.jets_corr{0}{1}[5]/t.jets_corr_JER[5]".format(syst,direc))
-                              else: jetpt5 = eval("t.jets_pt[5]*t.jets_corr{0}{1}[5]/t.jets_corr[5]".format(syst,direc))
+                            for var in sysvars:
+                                sysvar = var+syst+direc
+                                if not mytree.HaveBranch(sysvar):
+                                    mytree.variables[sysvar]=array('f',[-10])
+                                    mytree.tree.Branch(sysvar,mytree.variables[sysvar],sysvar+'/F')
+                            ht = eval("t.ht{0}{1}".format(syst,direc))
+                            jetpt5 = 0
+                            if syst == '_JER': jetpt5 = eval("t.jets_pt[5]*t.jets_corr{0}{1}[5]/t.jets_corr_JER[5]".format(syst,direc))
+                            else: jetpt5 = eval("t.jets_pt[5]*t.jets_corr{0}{1}[5]/t.jets_corr[5]".format(syst,direc))
 
-                              if sample != 'ttH':
-                                  tthcut = (t.HLT_ttH_FH or t.HLT_BIT_HLT_PFJet450_v) and ht>500 and jetpt5>40
-                              else:tthcut = t.json and (t.HLT_ttH_FH) and ht>500 and jetpt5>40
-                              if tthcut:
-                                    pass_sys += MeasureSystematics(t,mytree,syst,direc)
+                            if sample != 'ttH':
+                                tthcut = (t.HLT_ttH_FH or t.HLT_BIT_HLT_PFJet450_v) and ht>500 and jetpt5>40
+                            else:tthcut = t.json and (t.HLT_ttH_FH) and ht>500 and jetpt5>40
+                            if tthcut:
+                                pass_sys += MeasureSystematics(t,mytree,syst,direc)
 
 
             # if pass_sys:
@@ -685,7 +687,8 @@ if __name__ == "__main__":
 
             if tthcut_nom or pass_sys:
                 pass_nominal =  MeasureNominal(t,mytree,pass_sys)
-
+            if pass_nominal and not pass_sys or pass_sys and not pass_nominal:
+                print 'aaaaaaaaaa'
             #       print "Look at the previous output!!!!"
             #       print '#'*200
             #       print 'nominal values'
@@ -703,15 +706,23 @@ if __name__ == "__main__":
             #       print '#'*80
             #       print "End of nominal"
             if pass_nominal > 0 or pass_sys > 0:
-
-                  tkin.Fill()
-                  mytree.ZeroArray()
+                mytree.variables['pass_sys'][0] = pass_sys
+                mytree.variables['pass_nom'][0] = pass_nominal       
+                tkin.Fill()
+                mytree.ZeroArray()
 
             # if pass_nominal > 0 or pass_sys > 0:
             #     print 'should all be reset'
             #     mytree.Print()
             if e > emax: break
+
+
       watch.Print()
-      tkin.Write()
-      fout.Write()
-      fout.Close()
+      if e != emin:
+          foutname = 'Skim_'
+          foutname += sample + '_'
+          foutname += str(emax)+'.root'
+          fout = TFile(foutname,'recreate')
+          tkin.Write()
+          fout.Write()
+          fout.Close()
