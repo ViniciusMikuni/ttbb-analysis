@@ -12,7 +12,7 @@ The code is the based on the analysis of the ttbb croiss section meaurement on t
 After the creation of the ntuples, we can create skims to further reduce the size, while also adding new useful variables (like our BDTs).
 This can be done py running the python script <b> Skim_NoBtagSys.py </b> and changing <b> Skim_cfg.py </b> for input paths, samples and outputs.
 
-In case the BDT variables are already in your ntuples (plus the systematic variations) you can also run the fast version of the code <b> Skim_NoBtagSys.py </b>.
+In case the BDT variables are already in your ntuples (plus the systematic variations) you can also run the fast version of the code <b> Skim_NoBtagSys_Fast.py </b>.
 
 <h1><b>Plotting</b></h1>
 
