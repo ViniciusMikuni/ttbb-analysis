@@ -13,7 +13,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
 
     Returns:
         - a list of ratios QCD_data/QCD_est (per bin) in the VR, to define the systematic on QCD in the SR
-        - the expected yields of QCD in the SR and CR1
+        - the expected yields of QCD in the categories (estimated by subtraction)
         - the expected nominal shape of QCD in the SR
     """
 
@@ -21,6 +21,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
 
     # Read all histograms, put them in a dictionary with key = category
     all_histos = {}
+    est_QCD_yields = {}
 
     categories = ['CR1', 'CR2', 'VR', 'SR']
     
@@ -45,7 +46,6 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         # define sum of nominal backgrounds and signals
         total = all_histos[cat]['data_obs'].Clone('total')
         total.Reset()
-        total.Sumw2()
 
         for proc in mc_backgrounds + mc_signals:
             total.Add(all_histos[cat][proc])
@@ -53,9 +53,11 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
 
         # define initial "nominal" QCD estimate by subtracting total from data
         QCD_subtr = all_histos[cat]['data_obs'].Clone('QCD_subtr')
-        QCD_subtr.Sumw2()
         QCD_subtr.Add(total, -1)
         all_histos[cat]['QCD_subtr'] = QCD_subtr
+        
+        est_QCD_yields[cat] = QCD_subtr.Integral()
+        print('QCD yield estimated by subtraction in {}: {}'.format(cat, est_QCD_yields[cat]))
 
     for cat in ['CR1', 'SR']:
         # define 'delta' histograms for each bin in CR1 and SR
@@ -68,23 +70,22 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
 
     # Estimate QCD in VR using CR2
     QCD_est = all_histos['CR2']['QCD_subtr'].Clone('QCD_est')
-    QCD_est.Scale(all_histos['VR']['QCD_subtr'].Integral() / QCD_est.Integral())
+    QCD_est.Scale(est_QCD_yields['VR'] / est_QCD_yields['CR2'])
     all_histos['VR']['QCD_est'] = QCD_est
 
     # Estimate QCD in SR using CR1
     QCD_est = all_histos['CR1']['QCD_subtr'].Clone('QCD_est')
-    QCD_yield_CR1 = QCD_est.Integral()
-    QCD_est.Scale(1./QCD_yield_CR1)
+    QCD_est.Scale(1./est_QCD_yields['CR1'])
     QCD_shape_CR1 = [ QCD_est.GetBinContent(i) for i in range(1, Nbins+1) ]
-    QCD_est.Scale(all_histos['SR']['QCD_subtr'].Integral())
+    QCD_est.Scale(est_QCD_yields['SR'])
     all_histos['SR']['QCD_est'] = QCD_est
-    QCD_yield_SR = QCD_est.Integral()
+    print("QCD shape in CR1:")
+    print(QCD_shape_CR1)
 
     # If fake data, define data_obs in SR as the sum of MC backgrounds plus QCD estimate
     if not real_data:
         data_obs = all_histos['SR']['data_obs']
         data_obs.Reset()
-        data_obs.Sumw2()
         data_obs.Add(all_histos['SR']['mc_total'])
         data_obs.Add(all_histos['SR']['QCD_est'])
 
@@ -94,6 +95,8 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         QCD_est = all_histos['VR']['QCD_est']
         QCD_subtr = all_histos['VR']['QCD_subtr']
         QCD_ratios.append(QCD_subtr.GetBinContent(i) / QCD_est.GetBinContent(i))
+    print("QCD ratios in VR:")
+    print(QCD_ratios)
 
     # Write results to output file
     if not os.path.exists(os.path.dirname(output_filename)):
@@ -106,4 +109,4 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
             hist.Write()
         out_tf.cd()
 
-    return QCD_ratios, QCD_yield_CR1, QCD_yield_SR, QCD_shape_CR1
+    return QCD_ratios, est_QCD_yields, QCD_shape_CR1
