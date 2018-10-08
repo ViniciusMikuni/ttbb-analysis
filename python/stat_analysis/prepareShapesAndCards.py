@@ -69,20 +69,15 @@ def prepareShapesAndCards(options):
     else:
         print("Not applying any systematics on the QCD shape.")
 
-    ### QCD estimate: add the rate params for each bin and for the total normalisation in CR1 and SR
+    ### QCD estimate: add the rate params for each bin in the SR and for the SR->CR1 transfer ratio
     extraStrForQCD = ''
-    extraStrForQCD += 'scale_QCD_CR1 extArg {} [0.,2000.]\n'.format(est_QCD_yields['CR1'] / 100.)
-    extraStrForQCD += 'scale_QCD_SR extArg {} [0.,500.]\n'.format(est_QCD_yields['SR'] / 100.)
+    extraStrForQCD += 'scale_ratio_QCD_CR1_SR extArg {} [0.,10.]\n'.format(est_QCD_yields['CR1'] / est_QCD_yields['SR'])
     
-    for i in range(2, Nbins+1):
-        extraStrForQCD += 'fraction_QCD_bin_{} extArg {} [0.,100.]\n'.format(i, 100*QCD_shape_CR1[i-1])
-        extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} (@0*@1) scale_QCD_CR1,fraction_QCD_bin_{0}\n'.format(i)
-        extraStrForQCD += 'yield_QCD_SR_bin_{0} rateParam SR QCD_bin_{0} (@0*@1) scale_QCD_SR,fraction_QCD_bin_{0}\n'.format(i)
+    for i in range(1, Nbins+1):
+        extraStrForQCD += 'yield_QCD_SR_bin_{0} rateParam SR QCD_bin_{0} {1} [0.,10000.]\n'.format(i, est_QCD_yields['SR']*QCD_shape_CR1[i-1])
     
-    allBinSum = '+'.join([ '@{}'.format(i) for i in range(1, Nbins) ])
-    allBinParams = ','.join([ 'fraction_QCD_bin_{}'.format(i) for i in range(2, Nbins+1) ])
-    extraStrForQCD += 'yield_QCD_CR1_bin_1 rateParam CR1 QCD_bin_1 (@0*(100.-({0}))) scale_QCD_CR1,{1}\n'.format(allBinSum, allBinParams)
-    extraStrForQCD += 'yield_QCD_SR_bin_1 rateParam SR QCD_bin_1 (@0*(100.-({0}))) scale_QCD_SR,{1}\n'.format(allBinSum, allBinParams)
+    for i in range(1, Nbins+1):
+        extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} (@0*@1) scale_ratio_QCD_CR1_SR,yield_QCD_SR_bin_{0}\n'.format(i)
     
     cb.AddDatacardLineAtEnd(extraStrForQCD)
    
@@ -145,10 +140,10 @@ if [[ ! -f workspace.root ]]; then
     text2workspace.py datacard.dat -o workspace.root
 fi
 
-combine -M MultiDimFit --algo grid --points 500 --rMin 0 --rMax 2 -t -1 --expectSignal=1 -n nominal workspace.root
-combine -M MultiDimFit --algo grid --points 500 --rMin -1 --rMax 4 -t -1 --expectSignal=1 -n theory --freezeNuisanceGroups theory workspace.root
-combine -M MultiDimFit --algo grid --points 500 --rMin 0 --rMax 2 -t -1 --expectSignal=1 -n stat -S 0 workspace.root
-# combine -M MultiDimFit --algo grid --points 500 --rMin -1 --rMax 4 --expectSignal=1 -n stat --freezeParameters all --fastScan workspace.root
+combine -M MultiDimFit --algo grid --points 500 --rMin 0.5 --rMax 1.5 -t -1 --expectSignal=1 -n nominal workspace.root
+combine -M MultiDimFit --algo grid --points 500 --rMin 0.5 --rMax 1.5 -t -1 --expectSignal=1 -n theory --freezeNuisanceGroups theory workspace.root
+combine -M MultiDimFit --algo grid --points 500 --rMin 0.5 --rMax 1.5 -t -1 --expectSignal=1 -n stat -S 0 workspace.root
+# combine -M MultiDimFit --algo grid --points 500 --rMin 0.5 --rMax 1.4 --expectSignal=1 -n stat --freezeParameters all --fastScan workspace.root
 # plot1DScan.py higgsCombinenominal.MultiDimFit.mH120.root --others 'higgsCombinestat.MultiDimFit.mH120.root:Freeze all:2' --breakdown syst,stat
 plot1DScan.py higgsCombinenominal.MultiDimFit.mH120.root --others 'higgsCombinetheory.MultiDimFit.mH120.root:Freeze theory:4' 'higgsCombinestat.MultiDimFit.mH120.root:Freeze all:2' --breakdown theory,syst,stat
     """
@@ -163,8 +158,8 @@ if [[ ! -f workspace.root ]]; then
     text2workspace.py datacard.dat -o workspace.root
 fi
 
-combineTool.py -M Impacts -d workspace.root -m 120 -t -1 --rMin -2 --rMax 2 --expectSignal=1 --robustHesse=1 --cminDefaultMinimizerStrategy 0 --doInitialFit --robustFit 1
-combineTool.py -M Impacts -d workspace.root -m 120 -t -1 --rMin -2 --rMax 2 --expectSignal=1 --robustHesse=1 --cminDefaultMinimizerStrategy 0 --robustFit 1 --doFits --parallel 4
+combineTool.py -M Impacts -d workspace.root -m 120 -t -1 --rMin 0.5 --rMax 1.5 --expectSignal=1 --robustHesse=1 --cminDefaultMinimizerStrategy 0 --doInitialFit --robustFit 1
+combineTool.py -M Impacts -d workspace.root -m 120 -t -1 --rMin 0.5 --rMax 1.5 --expectSignal=1 --robustHesse=1 --cminDefaultMinimizerStrategy 0 --robustFit 1 --doFits --parallel 4
 combineTool.py -M Impacts -d workspace.root -m 120 -o impacts_signal_injected.json
 plotImpacts.py -i impacts_signal_injected.json -o impacts_signal_injected
     """

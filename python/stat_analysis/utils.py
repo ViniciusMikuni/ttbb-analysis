@@ -59,15 +59,6 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         est_QCD_yields[cat] = QCD_subtr.Integral()
         print('QCD yield estimated by subtraction in {}: {}'.format(cat, est_QCD_yields[cat]))
 
-    for cat in ['CR1', 'SR']:
-        # define 'delta' histograms for each bin in CR1 and SR
-        for i in range(1, Nbins + 1):
-            name = 'QCD_bin_{}'.format(i)
-            delta = total.Clone(name)
-            delta.Reset()
-            delta.SetBinContent(i, 1)
-            all_histos[cat][name] = delta
-
     # Estimate QCD in VR using CR2
     QCD_est = all_histos['CR2']['QCD_subtr'].Clone('QCD_est')
     QCD_est.Scale(est_QCD_yields['VR'] / est_QCD_yields['CR2'])
@@ -81,6 +72,16 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
     all_histos['SR']['QCD_est'] = QCD_est
     print("QCD shape in CR1:")
     print(QCD_shape_CR1)
+
+    # Define 'delta' histograms for each bin in CR1 and SR
+    for cat in ['CR1', 'SR']:
+        for i in range(1, Nbins + 1):
+            name = 'QCD_bin_{}'.format(i)
+            delta = total.Clone(name)
+            delta.Reset()
+            delta.SetBinContent(i, 1)
+            # delta.SetBinContent(i, 1)
+            all_histos[cat][name] = delta
 
     # If fake data, define data_obs in SR as the sum of MC backgrounds plus QCD estimate
     if not real_data:
