@@ -93,40 +93,52 @@ def prepareShapesAndCards(options):
             cb.cp().bin(['SR']).process(['QCD_bin_{}'.format(i)]).AddSyst(cb, 'QCD_shape_bin_{}'.format(i), 'lnN', ch.SystMap()(lnN))
 
     extraStrForQCD = ''
+    # To define nuisance group with all QCD parameters
+    paramListQCD = []
     
     if options.fit_mode == 'shape_direct':
         ### QCD estimate: freely floating
         extraStrForQCD += 'rate_QCD rateParam SR QCD 1. [0.,10.]\n'
+        paramListQCD.append('rate_QCD')
     
     elif options.fit_mode == 'shape_CR1':
         ### QCD estimate: fit shape from CR1, normalisation floating
         extraStrForQCD += 'scale_ratio_QCD_CR1_SR extArg 1. [0.,10.]\n'
+        paramListQCD.append('scale_ratio_QCD_CR1_SR')
         
         for i in range(1, Nbins+1):
             extraStrForQCD += 'yield_QCD_SR_bin_{0} rateParam SR QCD_bin_{0} 1. [0.,10.]\n'.format(i)
+            paramListQCD.append('yield_QCD_SR_bin_{}'.format(i))
     
         for i in range(1, Nbins+1):
             extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} (@0*@1) scale_ratio_QCD_CR1_SR,yield_QCD_SR_bin_{0}\n'.format(i)
+            paramListQCD.append('yield_QCD_CR1_bin_{}'.format(i))
     
     elif options.fit_mode == 'abcd':
-        ### QCD estimate: add the rate params for each bin in the SR and for the SR->CR1 transfer ratio
+        ### QCD estimate: add the rate params for each bin in the CR1, CR2 and VR
+        ### The yield in the SR is then expressed as CR1*VR/CR2
         for i in range(1, Nbins+1):
-            extraStrForQCD += 'scale_ratio_QCD_bin_{0} extArg 1.\n'.format(i)
-            extraStrForQCD += 'yield_QCD_VR_bin_{0} rateParam VR QCD_bin_{0} 1.\n'.format(i)
-            extraStrForQCD += 'yield_QCD_SR_bin_{0} rateParam SR QCD_bin_{0} 1.\n'.format(i)
+            extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} 1. [0.,5.]\n'.format(i)
+            extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} 1. [0.,5.]\n'.format(i)
+            extraStrForQCD += 'yield_QCD_VR_bin_{0} rateParam VR QCD_bin_{0} 1. [0.,5.]\n'.format(i)
         
-            extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} (@0*@1) scale_ratio_QCD_bin_{0},yield_QCD_VR_bin_{0}\n'.format(i)
-            extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} (@0*@1) scale_ratio_QCD_bin_{0},yield_QCD_SR_bin_{0}\n'.format(i)
+            extraStrForQCD += 'yield_QCD_SR_bin_{0} rateParam SR QCD_bin_{0} (@0*@1/@2) yield_QCD_VR_bin_{0},yield_QCD_CR1_bin_{0},yield_QCD_CR2_bin_{0}\n'.format(i)
+            
+            # We don't want the SR parameter in there, since it's dependent on the others?
+            paramListQCD.append('yield_QCD_CR1_bin_{}'.format(i))
+            paramListQCD.append('yield_QCD_CR2_bin_{}'.format(i))
+            paramListQCD.append('yield_QCD_VR_bin_{}'.format(i))
     
     cb.AddDatacardLineAtEnd(extraStrForQCD)
 
-    # Define theory systematic group
+    # Define systematic groups
     syst_groups = {
             "theory": [ s[1] for s in defs.theory_shape_systs ] + 
                         list(itertools.chain.from_iterable(
                             map(defs.getNuisanceFromTemplate, defs.theory_rate_systs.keys(), defs.theory_rate_systs.values())
                         )),
             "exp": defs.exp_systs,
+            "QCD": paramListQCD,
         }
 
     def getNuisanceGroupString(groups):
@@ -144,13 +156,16 @@ def prepareShapesAndCards(options):
 
     if options.bbb:
         # MC statistics - has to be done after the shapes have been extracted!
-        bbb_bkg = ch.BinByBinFactory().SetVerbosity(5)
-        bbb_bkg.SetAddThreshold(0.05).SetMergeThreshold(0.5).SetFixNorm(False)
-        bbb_bkg.MergeBinErrors(cb.cp().backgrounds())
-        bbb_bkg.AddBinByBin(cb.cp().backgrounds(), cb)
+        # bbb_bkg = ch.BinByBinFactory().SetVerbosity(5)
+        # bbb_bkg.SetAddThreshold(0.05).SetMergeThreshold(0.5).SetFixNorm(False)
+        # bbb_bkg.MergeBinErrors(cb.cp().backgrounds())
+        # bbb_bkg.AddBinByBin(cb.cp().backgrounds(), cb)
 
-        bbb_sig = ch.BinByBinFactory().SetVerbosity(5).SetAddThreshold(0.2).SetFixNorm(False)
-        bbb_sig.AddBinByBin(cbWithoutQCD.cp().signals(), cb)
+        # bbb_sig = ch.BinByBinFactory().SetVerbosity(5).SetAddThreshold(0.2).SetFixNorm(False)
+        # bbb_sig.AddBinByBin(cbWithoutQCD.cp().signals(), cb)
+
+        # Use combine internal BBB (default: BB lite, merging everything for sig & bkg separately)
+        cb.AddDatacardLineAtEnd("* autoMCStats 0 0 1\n")
     
     output_dir = options.output
 
@@ -183,8 +198,9 @@ fi
     script = """
 RMIN=0.
 RMAX=2.0
+FIT_OPT=( --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 --X-rtd MINIMIZER_analytic )
 
-combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t -1 --algo singles --autoBoundsPOIs "*" --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2
+combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t -1 --algo singles --autoBoundsPOIs "*" "${FIT_OPT[@]}"
 # combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 --robustFit=1 --cminDefaultMinimizerStrategy 2 --saveShapes --plots
 #combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t 1000 --toysFrequentist > /dev/null
 """
@@ -212,9 +228,10 @@ plot1DScan.py higgsCombinenominal.MultiDimFit.mH120.root --others 'higgsCombinet
     script = """
 RMIN=-1
 RMAX=3
+FIT_OPT=( --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 --X-rtd MINIMIZER_analytic )
 
-combineTool.py -M Impacts -d workspace.root -m 120 -t -1 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doInitialFit --robustFit 1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2
-combineTool.py -M Impacts -d workspace.root -m 120 -t -1 --rMin $RMIN --rMax $RMAX --expectSignal=1 --robustFit 1  --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 --doFits --parallel 6
+combineTool.py -M Impacts -d workspace.root -t -1 -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doInitialFit "${FIT_OPT[@]}"
+combineTool.py -M Impacts -d workspace.root -t -1 -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doFits --parallel 6 "${FIT_OPT[@]}"
 combineTool.py -M Impacts -d workspace.root -m 120 -o impacts_signal_injected.json
 plotImpacts.py -i impacts_signal_injected.json -o impacts_signal_injected
     """

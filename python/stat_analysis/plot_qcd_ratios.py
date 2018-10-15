@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import ROOT as R
 
 R.gStyle.SetOptStat(0)
@@ -39,3 +41,5 @@ leg.Draw()
 
 c.Print("qcd_ratios.pdf")
 c.Print("qcd_ratios.png")
+
+tf.Close()
