@@ -13,7 +13,7 @@ bkg_processes_mc = [
 # FIXME
 sig_processes = [
         'ttbb',
-        # 'ttb',
+        'ttb',
         # 'tt2b'
 ]
 
@@ -68,35 +68,104 @@ theory_shape_systs = [
         # lnN nuisances take care of the yield
         # -> should be a single nuisance
         # FIXME should not correlate QCD scale across ttX processes?
-        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
-        (['ttH'], 'QCD_scale_ttH'),
-        (['stop'], 'QCD_scale_t'),
-        (['VV'], 'QCD_scale_VV'),
-        (['VJ'], 'QCD_scale_V'),
-        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
-        (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
-        (['stop'], 'pdf_qg'),
+        # (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
+        # (['ttH'], 'QCD_scale_ttH'),
+        # (['stop'], 'QCD_scale_t'),
+        # (['VV'], 'QCD_scale_VV'),
+        # (['VJ'], 'QCD_scale_V'),
+        # (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
+        # (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
+        # (['stop'], 'pdf_qg'),
         
         # FIXME NOT actual shape uncertainties!
         # -> should have simple lnN
-        (['ttbb'], 'ttbb_FSR'),
-        (['ttbb'], 'ttbb_ISR'),
-        (['ttbb'], 'ttbb_tune'),
-        (['ttbb'], 'ttbb_hdamp'),
-        (['ttcc'], 'ttcc_FSR'),
-        (['ttcc'], 'ttcc_ISR'),
-        (['ttcc'], 'ttcc_tune'),
-        (['ttcc'], 'ttcc_hdamp'),
-        (['ttlf'], 'ttlf_FSR'),
-        (['ttlf'], 'ttlf_ISR'),
-        (['ttlf'], 'ttlf_tune'),
-        (['ttlf'], 'ttlf_hdamp'),
+        # (['ttbb'], 'ttbb_FSR'),
+        # (['ttbb'], 'ttbb_ISR'),
+        # (['ttbb'], 'ttbb_tune'),
+        # (['ttbb'], 'ttbb_hdamp'),
+        # (['ttcc'], 'ttcc_FSR'),
+        # (['ttcc'], 'ttcc_ISR'),
+        # (['ttcc'], 'ttcc_tune'),
+        # (['ttcc'], 'ttcc_hdamp'),
+        # (['ttlf'], 'ttlf_FSR'),
+        # (['ttlf'], 'ttlf_ISR'),
+        # (['ttlf'], 'ttlf_tune'),
+        # (['ttlf'], 'ttlf_hdamp'),
     ]
 
 theory_rate_systs = {
-        # FIXME 50% uncertainty on ttcc
+        # FIXME 50% uncertainty on ttcc?
         'ttcc_norm': ('lnN', ch.SystMap('process')(['ttcc'], 1.5)),
+
+        # All uncorrelated between ttlf, ttcc, ttbb
+        '$PROCESS_FSR': ('lnN', ch.SystMap('process')
+                             (['ttbb'], (0.93, 1.07))
+                             (['ttcc'], (0.91, 1.09))
+                             (['ttlf'], (0.82, 1.09))
+                        ),
+        
+        '$PROCESS_ISR': ('lnN', ch.SystMap('process')
+                             (['ttbb'], (0.90, 1.07))
+                             (['ttcc'], (0.96, 1.07))
+                             (['ttlf'], (0.95, 1.07))
+                        ),
+        
+        '$PROCESS_tune': ('lnN', ch.SystMap('process')
+                             (['ttbb'], (0.99, 1.02))
+                             (['ttcc'], (0.98, 1.007))
+                             (['ttlf'], (0.99, 1.005))
+                        ),
+        
+        '$PROCESS_hdamp': ('lnN', ch.SystMap('process')
+                             (['ttbb'], (0.92, 1.02))
+                             (['ttcc'], (0.92, 1.04))
+                             (['ttlf'], (0.93, 1.03))
+                        ),
+
+        'pdf_gg': ('lnN', ch.SystMap('process')
+                            (['ttbb'], 1.04)
+                            (['ttcc'], 1.04)
+                            (['ttlf'], 1.04)
+                            (['ttV'], 1.04)
+                        ),
+        
+        'pdf_qg': ('lnN', ch.SystMap('process')
+                            (['stop'], 1.03)
+                        ),
+        
+        'pdf_qqbar': ('lnN', ch.SystMap('process')
+                            (['VJ'], 1.04)
+                            (['VV'], 1.02)
+                            (['ttV'], 1.02)
+                        ),
+
+        'QCD_scale_tt': ('lnN', ch.SystMap('process')
+                             (['ttbb'], (0.96, 1.04))
+                             (['ttcc'], (0.96, 1.04))
+                             (['ttlf'], (0.96, 1.04))
+                             (['ttV'], (0.88, 1.13))
+                        ),
+        
+        'QCD_scale_t': ('lnN', ch.SystMap('process')
+                             (['stop'], (0.98, 1.04))
+                        ),
+        
+        'QCD_scale_V': ('lnN', ch.SystMap('process')
+                             (['VJ'], 1.01)
+                        ),
+        
+        'QCD_scale_VV': ('lnN', ch.SystMap('process')
+                             (['VV'], 1.02)
+                        ),
+        
     }
+
+def getNuisanceFromTemplate(key, syst):
+    if '$PROCESS' not in key:
+        return [ key ]
+    sm = syst[1]
+    procs = [ p[0] for p in sm.GetTupleSet() ]
+    return [ key.replace('$PROCESS', p) for p in procs ]
 
 def getLumiUncertainty(era):
     if era == "13TeV_2016":

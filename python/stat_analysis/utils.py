@@ -77,16 +77,8 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
     print("QCD shape in CR1:")
     print(QCD_shape_CR1)
 
-    # Define 'delta' histograms for each bin in CR1 and SR
-    for cat in categories: #['CR1', 'SR']:
-        for i in range(1, Nbins + 1):
-            name = 'QCD_bin_{}'.format(i)
-            delta = total.Clone(name)
-            delta.Reset()
-            delta.SetBinContent(i, 1)
-            all_histos[cat][name] = delta
-
     # If fake data, define data_obs in SR as the sum of MC backgrounds plus QCD estimate
+    # (so using shape from CR1 but overall normalisation from data in SR)
     if not real_data:
         data_obs = all_histos['SR']['data_obs']
         data_obs.Reset()
@@ -94,6 +86,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         data_obs.Add(all_histos['SR']['QCD_est'])
 
     # Compute ratios of QCD_subtr over QCD_est for each bin of the VR template
+    # NOTE: not used anymore for ABCD setup
     QCD_ratios = []
     for i in range(1, Nbins + 1):
         QCD_est = all_histos['VR']['QCD_est']
@@ -101,6 +94,20 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         QCD_ratios.append(QCD_subtr.GetBinContent(i) / QCD_est.GetBinContent(i))
     print("QCD ratios in VR:")
     print(QCD_ratios)
+
+    # Define 'delta' histograms for each bin in all categories
+    # Yield = estimated yield
+    for cat in categories: #['CR1', 'SR']:
+        for i in range(1, Nbins + 1):
+            name = 'QCD_bin_{}'.format(i)
+            delta = total.Clone(name)
+            delta.Reset()
+            if cat in ['SR', 'VR']:
+                delta.SetBinContent(i, all_histos[cat]['QCD_est'].GetBinContent(i))
+            if cat in ['CR1', 'CR2']:
+                delta.SetBinContent(i, all_histos[cat]['QCD_subtr'].GetBinContent(i))
+            delta.SetBinError(i, 0)
+            all_histos[cat][name] = delta
 
     # Write results to output file
     if not os.path.exists(os.path.dirname(output_filename)):
