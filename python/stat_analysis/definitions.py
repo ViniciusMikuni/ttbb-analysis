@@ -1,21 +1,25 @@
 import CombineHarvester.CombineTools.ch as ch
+import itertools
 
-bkg_processes_mc = [
-        'ttlf',
+tt_bkg = [
         'ttcc',
+        'ttlf',
+    ]
+
+# FIXME
+sig_processes = [
+        'ttbb',
+        # 'ttb',
+        # 'tt2b'
+]
+
+other_bkg = [
         'stop',
         'VJ',
         'VV',
         'ttV',
         'ttH'
     ]
-
-# FIXME
-sig_processes = [
-        'ttbb',
-        'ttb',
-        # 'tt2b'
-]
 
 exp_systs = [
         'CMS_btag_hf',
@@ -62,35 +66,37 @@ exp_systs = [
     ]
 
 theory_shape_systs = [
-        (['ttbb', 'ttcc', 'ttlf'], 'CMS_top_Weight'),
-        
+        (tt_bkg + sig_processes, 'CMS_top_Weight'),
+]
+
+fake_lnN_systs = [        
         # FIXME all shapes variations are normalised to the same yield
         # lnN nuisances take care of the yield
         # -> should be a single nuisance
         # FIXME should not correlate QCD scale across ttX processes?
-        # (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
-        # (['ttH'], 'QCD_scale_ttH'),
-        # (['stop'], 'QCD_scale_t'),
-        # (['VV'], 'QCD_scale_VV'),
-        # (['VJ'], 'QCD_scale_V'),
-        # (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
-        # (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
-        # (['stop'], 'pdf_qg'),
+        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
+        (['ttH'], 'QCD_scale_ttH'),
+        (['stop'], 'QCD_scale_t'),
+        (['VV'], 'QCD_scale_VV'),
+        (['VJ'], 'QCD_scale_V'),
+        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
+        (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
+        (['stop'], 'pdf_qg'),
         
         # FIXME NOT actual shape uncertainties!
         # -> should have simple lnN
-        # (['ttbb'], 'ttbb_FSR'),
-        # (['ttbb'], 'ttbb_ISR'),
-        # (['ttbb'], 'ttbb_tune'),
-        # (['ttbb'], 'ttbb_hdamp'),
-        # (['ttcc'], 'ttcc_FSR'),
-        # (['ttcc'], 'ttcc_ISR'),
-        # (['ttcc'], 'ttcc_tune'),
-        # (['ttcc'], 'ttcc_hdamp'),
-        # (['ttlf'], 'ttlf_FSR'),
-        # (['ttlf'], 'ttlf_ISR'),
-        # (['ttlf'], 'ttlf_tune'),
-        # (['ttlf'], 'ttlf_hdamp'),
+        (['ttbb'], 'ttbb_FSR'),
+        (['ttbb'], 'ttbb_ISR'),
+        (['ttbb'], 'ttbb_tune'),
+        (['ttbb'], 'ttbb_hdamp'),
+        (['ttcc'], 'ttcc_FSR'),
+        (['ttcc'], 'ttcc_ISR'),
+        (['ttcc'], 'ttcc_tune'),
+        (['ttcc'], 'ttcc_hdamp'),
+        (['ttlf'], 'ttlf_FSR'),
+        (['ttlf'], 'ttlf_ISR'),
+        (['ttlf'], 'ttlf_tune'),
+        (['ttlf'], 'ttlf_hdamp'),
     ]
 
 theory_rate_systs = {
@@ -166,6 +172,10 @@ def getNuisanceFromTemplate(key, syst):
     sm = syst[1]
     procs = [ p[0] for p in sm.GetTupleSet() ]
     return [ key.replace('$PROCESS', p) for p in procs ]
+
+theory_rate_list = list(itertools.chain.from_iterable(
+                            map(getNuisanceFromTemplate, theory_rate_systs.keys(), theory_rate_systs.values())
+                        ))
 
 def getLumiUncertainty(era):
     if era == "13TeV_2016":
