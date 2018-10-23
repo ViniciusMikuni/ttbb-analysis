@@ -1,8 +1,64 @@
 import ROOT as R
 import os
+import re
+from array import array
+
+def getEnvelopeHistograms(nominal, variations):
+    """
+    Compute envelop histograms create by all variations histograms. The envelop is simply the maximum
+    and minimum deviations from nominal for each bin of the distribution
+    Arguments:
+    nominal: The nominal histogram
+    variations: a list of histograms to compute the envelop from
+    """
+
+    if len(variations) < 2:
+        raise TypeError("At least two variations histograms must be provided")
+    
+    # Use GetNcells() so that it works also for 2D histograms
+    n_bins = nominal.GetNcells()
+    for v in variations:
+        if v.GetNcells() != n_bins:
+            raise RuntimeError("Variation histograms do not have the same binning as the nominal histogram")
+
+    up = nominal.Clone()
+    up.SetDirectory(R.nullptr)
+    up.Reset()
+
+    down = nominal.Clone()
+    down.SetDirectory(R.nullptr)
+    down.Reset()
+
+    for i in range(0, n_bins):
+        minimum = float("inf")
+        maximum = float("-inf")
+
+        for v in variations:
+            c = v.GetBinContent(i)
+            minimum = min(minimum, c)
+            maximum = max(maximum, c)
+
+        up.SetBinContent(i, maximum)
+        down.SetBinContent(i, minimum)
+
+    return (up, down)
+
+def equaliseBins(hist, title='BLR bins'):
+    """Change bin boundaries along X axis of hist to 1, 2, ..., nBins+1.
+    Does not affect actual bin contents or errors.
+    Return a cloned histogram, no side-effect on hist."""
+
+    newHist = hist.Clone()
+    newHist.SetDirectory(R.nullptr)
+    xAxis = newHist.GetXaxis()
+    xAxis.SetTitle(title)
+    nBins = xAxis.GetNbins()
+    newBins = array('f', range(1, nBins+2))
+    xAxis.Set(nBins, newBins)
+    return newHist
 
 
-def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False):
+def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, lumi_scale=None, equalBins=False):
     """
     Extract the shapes from input_filename and prepare them for combineHarvester in output_filename.
     The output file should contain directories named after the categories, containing histograms named as '$PROCESS' or '$PROCESS_$SYST(Up|Down)'
@@ -10,6 +66,8 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         - For now all existing templates for data and MC are copied
         - In the CR1 and SR, define 'delta' histograms named 'QCD_bin_{i=1..N}' that will serve to estimate QCD from a combined fit of CR1 and SR. Each histogram is zero everywhere but in bin i the yield is set as the estimated QCD in that bin (esimated = by subtraction in CR1 and CR2, and in SR and VR it's the from the corresponding CR scaled to the total expected)
         - If real_data is False, redefine data_obs in the SR as the sum of all background estimates (with QCD normalised to the total data in the SR)
+        - lumi_scale: use to scale all yields by some factor
+        - equalBins: if True, will recreate new histograms with equal-size bins (easier for plotting)
 
     Returns:
         - a list of ratios QCD_data/QCD_est (per bin) in the VR, to define the systematic on QCD in the SR
@@ -37,11 +95,48 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
                 # All histos must be positive...
                 for i in range(th1.GetNbinsX() + 2):
                     if th1.GetBinContent(i) < 0: th1.SetBinContent(i, 0)
-                all_histos[cat][key.GetName()] = th1
+                if equalBins:
+                    myTH1 = equaliseBins(th1)
+                else:
+                    myTH1 = th1
+                all_histos[cat][key.GetName()] = myTH1
+                if lumi_scale:
+                    myTH1.Scale(lumi_scale)
     tf.Close()
 
     Nbins = all_histos['SR']['data_obs'].GetNbinsX()
-    
+
+    # QCD scale envelopes
+    scaleSyst = 'CMS_LHEscale_Weight'
+    for cat in categories:
+        variations = {} # maps process to list of variation histograms
+        for key in all_histos[cat].keys():
+            for proc in mc_backgrounds + mc_signals:
+                if re.match("{}_{}[0-9]$".format(proc, scaleSyst), key):
+                    variations.setdefault(proc, [])
+                    variations[proc].append(all_histos[cat][key])
+
+        to_remove = []
+        for key, values in variations.items():
+            if len(values) != 6:
+                print("Warning: I was expecting 6 scale variations, but I got {} for {}".format(len(values), key))
+                to_remove.append(key)
+
+        for n in to_remove:
+            del variations[n]
+        
+        for proc, var in variations.items():
+            nominal = all_histos[cat][proc]
+            
+            up, down = getEnvelopeHistograms(nominal, var)
+            
+            up.SetName(nominal.GetName() + '_{}Up'.format(scaleSyst))
+            down.SetName(nominal.GetName() + '_{}Down'.format(scaleSyst))
+
+            all_histos[cat][up.GetName()] = up
+            all_histos[cat][down.GetName()] = down
+
+
     for cat in categories:
         # define sum of nominal backgrounds and signals
         total = all_histos[cat]['data_obs'].Clone('total')
@@ -65,8 +160,8 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
     QCD_shape_CR2 = [ QCD_est.GetBinContent(i) for i in range(1, Nbins+1) ]
     QCD_est.Scale(est_QCD_yields['VR'])
     all_histos['VR']['QCD_est'] = QCD_est
-    print("QCD shape in CR2:")
-    print(QCD_shape_CR2)
+    # print("QCD shape in CR2:")
+    # print(QCD_shape_CR2)
 
     # Estimate QCD in SR using CR1 (take shape & scale yields)
     QCD_est = all_histos['CR1']['QCD_subtr'].Clone('QCD_est')
@@ -74,8 +169,8 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
     QCD_shape_CR1 = [ QCD_est.GetBinContent(i) for i in range(1, Nbins+1) ]
     QCD_est.Scale(est_QCD_yields['SR'])
     all_histos['SR']['QCD_est'] = QCD_est
-    print("QCD shape in CR1:")
-    print(QCD_shape_CR1)
+    # print("QCD shape in CR1:")
+    # print(QCD_shape_CR1)
 
     # If fake data, define data_obs in SR as the sum of MC backgrounds plus QCD estimate
     # (so using shape from CR1 but overall normalisation from data in SR)

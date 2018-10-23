@@ -7,7 +7,8 @@ R.gStyle.SetOptTitle(0)
 R.gROOT.SetBatch(True)
 
 tf = R.TFile.Open("fitDiagnostics.root")
-cov = tf.Get("covariance_fit_s")
+fit = tf.Get("fit_s")
+cov = fit.correlationHist()
 cov.GetXaxis().SetLabelSize(0.005)
 cov.GetYaxis().SetLabelSize(0.005)
 
@@ -29,7 +30,7 @@ cov_list.sort(key=lambda i: abs(i[2]), reverse=True)
 
 output = ""
 for p1,p2,c in cov_list:
-    output += "{:^21} -- {:^21}: {: .3f}\n".format(p1, p2, c)
+    output += "{:^25} -- {:^25}: {: .3f}\n".format(p1, p2, c)
 
 with open("correlation.txt", "a") as f:
     f.write(output)

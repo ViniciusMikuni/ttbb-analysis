@@ -9,9 +9,10 @@ tt_bkg = [
 # FIXME
 sig_processes = [
         'ttbb',
-        # 'ttb',
+        'ttbb_other',
+        'ttb_other',
         # 'tt2b'
-]
+    ]
 
 other_bkg = [
         'stop',
@@ -31,7 +32,7 @@ exp_systs = [
         'CMS_btag_cferr1',
         'CMS_btag_cferr2',
         
-        'CMS_qg_Weight',
+        # 'CMS_qg_Weight',
         'CMS_pu_Weight',
         'CMS_trig_Weight',
 
@@ -43,30 +44,32 @@ exp_systs = [
         'CMS_SinglePionHCAL_j',
         'CMS_FlavorQCD_j',
         'CMS_TimePtEta_j',
-        'CMS_RelativeJEREC1_j',
-        'CMS_RelativeJEREC2_j',
-        'CMS_RelativeJERHF_j',
+        # 'CMS_RelativeJEREC1_j', # almost zero?
+        # 'CMS_RelativeJEREC2_j', # zero?
+        # 'CMS_RelativeJERHF_j', # zero?
         'CMS_RelativePtBB_j',
         'CMS_RelativePtEC1_j',
-        'CMS_RelativePtEC2_j',
-        'CMS_RelativePtHF_j',
-        # relativebal?
+        # 'CMS_RelativePtEC2_j', # zero?
+        # 'CMS_RelativePtHF_j', # zero?
+        'CMS_RelativeBal_j',
         'CMS_RelativeFSR_j',
         'CMS_RelativeStatFSR_j',
         'CMS_RelativeStatEC_j',
-        'CMS_RelativeStatHF_j',
+        # 'CMS_RelativeStatHF_j', # zero?
         'CMS_PileUpDataMC_j',
         'CMS_PileUpPtRef_j',
         'CMS_PileUpPtBB_j',
         'CMS_PileUpPtEC1_j',
-        # 'CMS_PileUpPtEC2_j', # removed because zero
-        'CMS_PileUpPtHF_j',
+        # 'CMS_PileUpPtEC2_j', # not even produced because zero
+        # 'CMS_PileUpPtHF_j', # zero?
         
         'CMS_JER_j',
     ]
 
 theory_shape_systs = [
         (tt_bkg + sig_processes, 'CMS_top_Weight'),
+        (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEscale_Weight'),
+        (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEPDF_Weight'),
 ]
 
 fake_lnN_systs = [        
@@ -74,14 +77,14 @@ fake_lnN_systs = [
         # lnN nuisances take care of the yield
         # -> should be a single nuisance
         # FIXME should not correlate QCD scale across ttX processes?
-        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
-        (['ttH'], 'QCD_scale_ttH'),
-        (['stop'], 'QCD_scale_t'),
-        (['VV'], 'QCD_scale_VV'),
-        (['VJ'], 'QCD_scale_V'),
-        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
-        (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
-        (['stop'], 'pdf_qg'),
+        # (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
+        # (['ttH'], 'QCD_scale_ttH'),
+        # (['stop'], 'QCD_scale_t'),
+        # (['VV'], 'QCD_scale_VV'),
+        # (['VJ'], 'QCD_scale_V'),
+        # (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
+        # (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
+        # (['stop'], 'pdf_qg'),
         
         # FIXME NOT actual shape uncertainties!
         # -> should have simple lnN
@@ -89,6 +92,14 @@ fake_lnN_systs = [
         (['ttbb'], 'ttbb_ISR'),
         (['ttbb'], 'ttbb_tune'),
         (['ttbb'], 'ttbb_hdamp'),
+        (['ttbb_other'], 'ttbb_FSR'),
+        (['ttbb_other'], 'ttbb_ISR'),
+        (['ttbb_other'], 'ttbb_tune'),
+        (['ttbb_other'], 'ttbb_hdamp'),
+        (['ttb_other'], 'ttbb_FSR'),
+        (['ttb_other'], 'ttbb_ISR'),
+        (['ttb_other'], 'ttbb_tune'),
+        (['ttb_other'], 'ttbb_hdamp'),
         (['ttcc'], 'ttcc_FSR'),
         (['ttcc'], 'ttcc_ISR'),
         (['ttcc'], 'ttcc_tune'),
@@ -129,9 +140,9 @@ theory_rate_systs = {
                         ),
 
         'pdf_gg': ('lnN', ch.SystMap('process')
-                            (['ttbb'], 1.04)
-                            (['ttcc'], 1.04)
-                            (['ttlf'], 1.04)
+                            # (['ttbb'], 1.04)
+                            # (['ttcc'], 1.04)
+                            # (['ttlf'], 1.04)
                             (['ttV'], 1.04)
                         ),
         
@@ -145,24 +156,24 @@ theory_rate_systs = {
                             (['ttV'], 1.02)
                         ),
 
-        'QCD_scale_tt': ('lnN', ch.SystMap('process')
-                             (['ttbb'], (0.96, 1.04))
-                             (['ttcc'], (0.96, 1.04))
-                             (['ttlf'], (0.96, 1.04))
-                             (['ttV'], (0.88, 1.13))
-                        ),
+        # 'QCD_scale_tt': ('lnN', ch.SystMap('process')
+                             # (['ttbb'], (0.96, 1.04))
+                             # (['ttcc'], (0.96, 1.04))
+                             # (['ttlf'], (0.96, 1.04))
+                             # (['ttV'], (0.88, 1.13))
+                        # ),
         
-        'QCD_scale_t': ('lnN', ch.SystMap('process')
-                             (['stop'], (0.98, 1.04))
-                        ),
+        # 'QCD_scale_t': ('lnN', ch.SystMap('process')
+                             # (['stop'], (0.98, 1.04))
+                        # ),
         
-        'QCD_scale_V': ('lnN', ch.SystMap('process')
-                             (['VJ'], 1.01)
-                        ),
+        # 'QCD_scale_V': ('lnN', ch.SystMap('process')
+                             # (['VJ'], 1.01)
+                        # ),
         
-        'QCD_scale_VV': ('lnN', ch.SystMap('process')
-                             (['VV'], 1.02)
-                        ),
+        # 'QCD_scale_VV': ('lnN', ch.SystMap('process')
+                             # (['VV'], 1.02)
+                        # ),
         
     }
 
