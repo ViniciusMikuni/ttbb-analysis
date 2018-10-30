@@ -32,7 +32,7 @@ exp_systs = [
         'CMS_btag_cferr1',
         'CMS_btag_cferr2',
         
-        # 'CMS_qg_Weight',
+        'CMS_qg_Weight',
         'CMS_pu_Weight',
         'CMS_trig_Weight',
 
@@ -70,21 +70,26 @@ theory_shape_systs = [
         (tt_bkg + sig_processes, 'CMS_top_Weight'),
         (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEscale_Weight'),
         (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEPDF_Weight'),
+        # (tt_bkg + sig_processes, 'isr'),
+        # (tt_bkg + sig_processes, 'fsr'),
+        # (tt_bkg + sig_processes, 'tune'),
+        # (tt_bkg + sig_processes, 'hdamp'),
 ]
 
+# Only used for "shape_direct" method!
 fake_lnN_systs = [        
         # FIXME all shapes variations are normalised to the same yield
         # lnN nuisances take care of the yield
         # -> should be a single nuisance
         # FIXME should not correlate QCD scale across ttX processes?
-        # (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
-        # (['ttH'], 'QCD_scale_ttH'),
-        # (['stop'], 'QCD_scale_t'),
-        # (['VV'], 'QCD_scale_VV'),
-        # (['VJ'], 'QCD_scale_V'),
-        # (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
-        # (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
-        # (['stop'], 'pdf_qg'),
+        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
+        (['ttH'], 'QCD_scale_ttH'),
+        (['stop'], 'QCD_scale_t'),
+        (['VV'], 'QCD_scale_VV'),
+        (['VJ'], 'QCD_scale_V'),
+        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
+        (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
+        (['stop'], 'pdf_qg'),
         
         # FIXME NOT actual shape uncertainties!
         # -> should have simple lnN
@@ -92,14 +97,14 @@ fake_lnN_systs = [
         (['ttbb'], 'ttbb_ISR'),
         (['ttbb'], 'ttbb_tune'),
         (['ttbb'], 'ttbb_hdamp'),
-        (['ttbb_other'], 'ttbb_FSR'),
-        (['ttbb_other'], 'ttbb_ISR'),
-        (['ttbb_other'], 'ttbb_tune'),
-        (['ttbb_other'], 'ttbb_hdamp'),
-        (['ttb_other'], 'ttbb_FSR'),
-        (['ttb_other'], 'ttbb_ISR'),
-        (['ttb_other'], 'ttbb_tune'),
-        (['ttb_other'], 'ttbb_hdamp'),
+        (['ttbb_other'], 'ttbb_other_FSR'),
+        (['ttbb_other'], 'ttbb_other_ISR'),
+        (['ttbb_other'], 'ttbb_other_tune'),
+        (['ttbb_other'], 'ttbb_other_hdamp'),
+        (['ttb_other'], 'ttb_other_FSR'),
+        (['ttb_other'], 'ttb_other_ISR'),
+        (['ttb_other'], 'ttb_other_tune'),
+        (['ttb_other'], 'ttb_other_hdamp'),
         (['ttcc'], 'ttcc_FSR'),
         (['ttcc'], 'ttcc_ISR'),
         (['ttcc'], 'ttcc_tune'),
@@ -115,29 +120,29 @@ theory_rate_systs = {
         'ttcc_norm': ('lnN', ch.SystMap('process')(['ttcc'], 1.5)),
 
         # All uncorrelated between ttlf, ttcc, ttbb
-        '$PROCESS_FSR': ('lnN', ch.SystMap('process')
-                             (['ttbb'], (0.93, 1.07))
-                             (['ttcc'], (0.91, 1.09))
-                             (['ttlf'], (0.82, 1.09))
-                        ),
+        # '$PROCESS_FSR': ('lnN', ch.SystMap('process')
+                             # (['ttbb'], (0.93, 1.07))
+                             # (['ttcc'], (0.91, 1.09))
+                             # (['ttlf'], (0.82, 1.09))
+                        # ),
         
-        '$PROCESS_ISR': ('lnN', ch.SystMap('process')
-                             (['ttbb'], (0.90, 1.07))
-                             (['ttcc'], (0.96, 1.07))
-                             (['ttlf'], (0.95, 1.07))
-                        ),
+        # '$PROCESS_ISR': ('lnN', ch.SystMap('process')
+                             # (['ttbb'], (0.90, 1.07))
+                             # (['ttcc'], (0.96, 1.07))
+                             # (['ttlf'], (0.95, 1.07))
+                        # ),
         
-        '$PROCESS_tune': ('lnN', ch.SystMap('process')
-                             (['ttbb'], (0.99, 1.02))
-                             (['ttcc'], (0.98, 1.007))
-                             (['ttlf'], (0.99, 1.005))
-                        ),
+        # '$PROCESS_tune': ('lnN', ch.SystMap('process')
+                             # (['ttbb'], (0.99, 1.02))
+                             # (['ttcc'], (0.98, 1.007))
+                             # (['ttlf'], (0.99, 1.005))
+                        # ),
         
-        '$PROCESS_hdamp': ('lnN', ch.SystMap('process')
-                             (['ttbb'], (0.92, 1.02))
-                             (['ttcc'], (0.92, 1.04))
-                             (['ttlf'], (0.93, 1.03))
-                        ),
+        # '$PROCESS_hdamp': ('lnN', ch.SystMap('process')
+                             # (['ttbb'], (0.92, 1.02))
+                             # (['ttcc'], (0.92, 1.04))
+                             # (['ttlf'], (0.93, 1.03))
+                        # ),
 
         'pdf_gg': ('lnN', ch.SystMap('process')
                             # (['ttbb'], 1.04)

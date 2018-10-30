@@ -3,60 +3,7 @@ import os
 import re
 from array import array
 
-def getEnvelopeHistograms(nominal, variations):
-    """
-    Compute envelop histograms create by all variations histograms. The envelop is simply the maximum
-    and minimum deviations from nominal for each bin of the distribution
-    Arguments:
-    nominal: The nominal histogram
-    variations: a list of histograms to compute the envelop from
-    """
-
-    if len(variations) < 2:
-        raise TypeError("At least two variations histograms must be provided")
-    
-    # Use GetNcells() so that it works also for 2D histograms
-    n_bins = nominal.GetNcells()
-    for v in variations:
-        if v.GetNcells() != n_bins:
-            raise RuntimeError("Variation histograms do not have the same binning as the nominal histogram")
-
-    up = nominal.Clone()
-    up.SetDirectory(R.nullptr)
-    up.Reset()
-
-    down = nominal.Clone()
-    down.SetDirectory(R.nullptr)
-    down.Reset()
-
-    for i in range(0, n_bins):
-        minimum = float("inf")
-        maximum = float("-inf")
-
-        for v in variations:
-            c = v.GetBinContent(i)
-            minimum = min(minimum, c)
-            maximum = max(maximum, c)
-
-        up.SetBinContent(i, maximum)
-        down.SetBinContent(i, minimum)
-
-    return (up, down)
-
-def equaliseBins(hist, title='BLR bins'):
-    """Change bin boundaries along X axis of hist to 1, 2, ..., nBins+1.
-    Does not affect actual bin contents or errors.
-    Return a cloned histogram, no side-effect on hist."""
-
-    newHist = hist.Clone()
-    newHist.SetDirectory(R.nullptr)
-    xAxis = newHist.GetXaxis()
-    xAxis.SetTitle(title)
-    nBins = xAxis.GetNbins()
-    newBins = array('f', range(1, nBins+2))
-    xAxis.Set(nBins, newBins)
-    return newHist
-
+from HistogramTools import getEnvelopeHistograms, equaliseBins
 
 def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, lumi_scale=None, equalBins=False):
     """
@@ -95,6 +42,8 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
                 # All histos must be positive...
                 for i in range(th1.GetNbinsX() + 2):
                     if th1.GetBinContent(i) < 0: th1.SetBinContent(i, 0)
+                    # if 'QCD' not in key.GetName():
+                        # th1.SetBinError(i, 0)
                 if equalBins:
                     myTH1 = equaliseBins(th1)
                 else:

@@ -4,6 +4,7 @@
 import os, sys, argparse, stat
 from math import sqrt
 from pdb import set_trace as bp # insert bp() to have a breakpoint anywhere
+from yaml import load
 
 import ROOT
 ROOT.gROOT.SetBatch()
@@ -24,6 +25,7 @@ def main():
     parser.add_argument('--fit-mode', dest='fit_mode', choices=['shape_direct', 'shape_CR1', 'abcd'], help='Fit mode')
     parser.add_argument('--qcd-systs', dest='QCD_systs', action='store_true', help='If mode is "shape_CR1", add uncertainty on the QCD shape from the VR/CR2 ratio')
     parser.add_argument('--equal-bins', dest='equalBins', action='store_true', help='Modify templates to have equal-width bins numbered 1 through nBins, without changing the bin contents. Makes plotting easier if some bins are very fine.')
+    parser.add_argument('--rate-systs', dest='rateSysts', type=str, default=None, help='Input YML file with rate systematics in the four regions')
     parser.add_argument('-o', '--output', type=str, help='Output directory')
 
     options = parser.parse_args()
@@ -61,6 +63,7 @@ def prepareShapesAndCards(options):
 
     cb.AddObservations(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], cats)
     
+    # cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], defs.sig_processes, [cats[0], cats[2]], True)
     cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], defs.sig_processes, cats, True)
 
     cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], defs.tt_bkg + defs.other_bkg, cats, False)
@@ -104,6 +107,12 @@ def prepareShapesAndCards(options):
         # Theory rate systematics
         for name,syst in defs.theory_rate_systs.items():
             cbWithoutQCD.AddSyst(cb, name, syst[0], syst[1])
+
+        # Theory rate uncertainties from the YML file
+        if options.rateSysts is not None:
+            rateSysts = addRateSystematics(cb, options.rateSysts)
+        else:
+            rateSysts = []
         
     ### QCD systematics: add a lnN for each bin using the ratio QCD_subtr/QCD_est in the VR
     if options.QCD_systs:
@@ -169,7 +178,7 @@ def prepareShapesAndCards(options):
     if options.fit_mode == 'shape_direct':
         syst_groups['theory'] += [ s[1] for s in defs.fake_lnN_systs ]
     else:
-        syst_groups['theory'] += defs.theory_rate_list
+        syst_groups['theory'] += defs.theory_rate_list + rateSysts
 
     def getNuisanceGroupString(groups):
         m_str = ""
@@ -305,6 +314,29 @@ popd
     createScript(script, 'do_QCD_scans.sh')
 
 
+def addRateSystematics(cb, yml_path):
+    with open(yml_path) as _f:
+        systs = load(_f)
+
+    newSysts = {}
+    for cat in systs.keys():
+        for sys in systs[cat].keys():
+            sys_dict = newSysts.setdefault(sys, [])
+            for proc in systs[cat][sys].keys():
+                values = systs[cat][sys][proc]
+                sys_dict.append( (cat, proc, (values[1], values[0])) )
+
+    # print(newSysts)
+
+    for name, syst in newSysts.items():
+        cm = ch.SystMap('bin', 'process')
+        for entry in syst:
+            cm = cm([entry[0]], [entry[1]], entry[2])
+        cb.cp().AddSyst(cb, name, 'lnN', cm)
+
+    return newSysts.keys()
+                
+    
 
 if __name__ == '__main__':
     main()
