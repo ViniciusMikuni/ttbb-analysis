@@ -3,62 +3,10 @@
 import argparse
 import os
 
-
 import ROOT as R
 
-def OpenFileAndGet(path, mode="read"):
-    """Open ROOT file in a mode, check if open properly, and return TFile handle."""
+from stat_analysis.HistogramTools import openFileAndGet, readRecursiveDirContent, writeRecursiveDirContent
 
-    _tf = R.TFile.Open(path, mode)
-    if not _tf.IsOpen():
-        raise Exception("Could not open file {}".format(path))
-    return _tf
-
-def readRecursiveDirContent(content, currTDir):
-    """Fill dictionary content with the directory structure of currTDir.
-    Every object is read and put in content with their name as the key.
-    Sub-folders will define sub-dictionaries in content with their name as the key.
-    """
-
-    if not currTDir.InheritsFrom("TDirectory") or not isinstance(content, dict):
-        return
-
-    # Retrieve the directory structure inside the ROOT file
-    currPath = currTDir.GetPath().split(':')[-1].split('/')[-1]
-
-    if currPath == '':
-        # We are in the top-level directory
-        thisContent = content
-    else:
-        thisContent = {}
-        content[currPath] = thisContent
-
-    listKeys = currTDir.GetListOfKeys()
-
-    for key in listKeys:
-        obj = key.ReadObj()
-        if obj.InheritsFrom("TDirectory"):
-            print("Entering sub-directory {}".format(obj.GetPath()))
-            readRecursiveDirContent(thisContent, obj)
-        else:
-            name = obj.GetName()
-            thisContent[name] = obj
-            obj.SetDirectory(0)
-
-
-def writeRecursiveDirContent(content, currTDir):
-    """Write the items in dictionary content to currTDir, respecting the sub-directory structure."""
-
-    if not currTDir.IsWritable() or not isinstance(content, dict):
-        return
-
-    for key, obj in content.items():
-        if isinstance(obj, dict):
-            print("Creating new sub-directory {}".format(key))
-            subDir = outTFile.mkdir(key)
-            writeRecursiveDirContent(obj, subDir)
-        elif isinstance(obj, R.TObject):
-            currTDir.WriteTObject(obj, key)
 
 def flattenLowerRightDiagonalTH2(skipRows=0, rebin=1):
     """
@@ -121,7 +69,7 @@ if __name__ == "__main__":
 
     options = parser.parse_args()
     
-    inTFile = OpenFileAndGet(options.input)
+    inTFile = openFileAndGet(options.input)
     inContent = {}
     readRecursiveDirContent(inContent, inTFile)
     inTFile.Close()
@@ -141,6 +89,6 @@ if __name__ == "__main__":
     myFlatten = flattenLowerRightDiagonalTH2(options.skip_rows, options.rebin)
     applyAndCopy(inContent, outContent, myFlatten, 'TH2')
 
-    outTFile = OpenFileAndGet(options.output, "recreate")
+    outTFile = openFileAndGet(options.output, "recreate")
     writeRecursiveDirContent(outContent, outTFile)
     outTFile.Close()
