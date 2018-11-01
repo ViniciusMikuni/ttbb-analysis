@@ -1,7 +1,6 @@
 import ROOT as R
 import os
 import re
-from array import array
 
 from HistogramTools import getEnvelopeHistograms, equaliseBins
 
@@ -23,6 +22,9 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
     """
 
     tf = R.TFile.Open(input_filename)
+
+    if not tf.IsOpen():
+        raise Exception("Could not open file {}".format(input_filename))
 
     # Read all histograms, put them in a dictionary with key = category
     all_histos = {}

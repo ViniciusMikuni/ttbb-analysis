@@ -4,7 +4,7 @@
 import os, sys, argparse, stat
 from math import sqrt
 from pdb import set_trace as bp # insert bp() to have a breakpoint anywhere
-from yaml import load
+import json
 
 import ROOT
 ROOT.gROOT.SetBatch()
@@ -25,7 +25,7 @@ def main():
     parser.add_argument('--fit-mode', dest='fit_mode', choices=['shape_direct', 'shape_CR1', 'abcd'], help='Fit mode')
     parser.add_argument('--qcd-systs', dest='QCD_systs', action='store_true', help='If mode is "shape_CR1", add uncertainty on the QCD shape from the VR/CR2 ratio')
     parser.add_argument('--equal-bins', dest='equalBins', action='store_true', help='Modify templates to have equal-width bins numbered 1 through nBins, without changing the bin contents. Makes plotting easier if some bins are very fine.')
-    parser.add_argument('--rate-systs', dest='rateSysts', type=str, default=None, help='Input YML file with rate systematics in the four regions')
+    parser.add_argument('--rate-systs', dest='rateSysts', type=str, default=None, help='Input JSON file with rate systematics in the four regions')
     parser.add_argument('-o', '--output', type=str, help='Output directory')
 
     options = parser.parse_args()
@@ -236,8 +236,8 @@ fi
 
     # Script: simple fits
     script = """
-RMIN=-1.
-RMAX=3.0
+RMIN=0.
+RMAX=2.0
 FIT_OPT=( --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 )
 
 combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t -1 --algo singles --autoBoundsPOIs "*" "${FIT_OPT[@]}"
@@ -251,8 +251,8 @@ combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSigna
     # Script: plots of NLL vs. r for different uncertainties
     script = """
 NPOINTS=50
-RMIN=-1.
-RMAX=3.0
+RMIN=0.
+RMAX=2.0
 
 combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _nominal workspace.root
 combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root
@@ -281,8 +281,8 @@ plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine
 
     # Script: impacts signal injected
     script = """
-RMIN=-1
-RMAX=3
+RMIN=0.
+RMAX=2.
 FIT_OPT=( --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 )
 
 mkdir impacts
@@ -301,7 +301,7 @@ popd
     # Script: plots of NLL vs. ALL QCD rate parameters
     script = """
 function scan_param() {
-    combine -M MultiDimFit --algo grid --points 50 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=-1,3:$1=0.5,1.5 --redefineSignalPOIs $1
+    combine -M MultiDimFit --algo grid --points 50 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1=0.5,1.5 --redefineSignalPOIs $1
     plot1DScan.py higgsCombine_$1.MultiDimFit.mH120.root --output scan_$1 --POI $1
 }
 export -f scan_param
@@ -314,17 +314,30 @@ popd
     createScript(script, 'do_QCD_scans.sh')
 
 
-def addRateSystematics(cb, yml_path):
-    with open(yml_path) as _f:
-        systs = load(_f)
+def addRateSystematics(cb, json_path):
+    # JSON is encoded as UTF8 by default, and that messes with the combineHarvester bindings
+    def ascii_encode_dict(data):
+        def ascii_encode(x):
+            if isinstance(x, unicode): return x.encode('ascii')
+            else: return x
+        return dict(map(ascii_encode, pair) for pair in data.items())
 
+    with open(json_path) as _f:
+        systs = json.load(_f, object_hook=ascii_encode_dict)
+
+    # Load all systematics in easier order
+    # newSysts[systematic] = [ (cat, proc, (down, up)), ... ]
     newSysts = {}
     for cat in systs.keys():
         for sys in systs[cat].keys():
             sys_dict = newSysts.setdefault(sys, [])
-            for proc in systs[cat][sys].keys():
-                values = systs[cat][sys][proc]
-                sys_dict.append( (cat, proc, (values[1], values[0])) )
+            proc_up = set(systs[cat][sys]["Up"].keys())
+            proc_down = set(systs[cat][sys]["Down"].keys())
+            assert(proc_up == proc_down)
+            for proc in proc_up:
+                value_up = systs[cat][sys]["Up"][proc]
+                value_down = systs[cat][sys]["Down"][proc]
+                sys_dict.append( (cat, proc, (value_down, value_up)) )
 
     # print(newSysts)
 

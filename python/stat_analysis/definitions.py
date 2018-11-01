@@ -168,17 +168,17 @@ theory_rate_systs = {
                              # (['ttV'], (0.88, 1.13))
                         # ),
         
-        # 'QCD_scale_t': ('lnN', ch.SystMap('process')
-                             # (['stop'], (0.98, 1.04))
-                        # ),
+        'QCD_scale_t': ('lnN', ch.SystMap('process')
+                             (['stop'], (0.98, 1.04))
+                        ),
         
-        # 'QCD_scale_V': ('lnN', ch.SystMap('process')
-                             # (['VJ'], 1.01)
-                        # ),
+        'QCD_scale_V': ('lnN', ch.SystMap('process')
+                             (['VJ'], 1.01)
+                        ),
         
-        # 'QCD_scale_VV': ('lnN', ch.SystMap('process')
-                             # (['VV'], 1.02)
-                        # ),
+        'QCD_scale_VV': ('lnN', ch.SystMap('process')
+                             (['VV'], 1.02)
+                        ),
         
     }
 
