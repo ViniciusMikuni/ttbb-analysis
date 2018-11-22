@@ -16,7 +16,7 @@ def flattenLowerRightDiagonalTH2(skipRows=0, rebin=1):
 
     def flattenLowerRightDiagonalTH2Impl(th2):
         """Given square TH2 with n*n bins, return TH1 with n*(n+1)/2 bins.
-        The bin contents and errors of the lower-right triangle (x>=y) of the TH2 are taken over.
+        The bin contents and errors of the upper-left triangle (x<=y) of the TH2 are taken over.
         All bins in the TH1 are of uniform size with arbitrary boundaries.
         Overflow and underflow of the TH2 are NOT taken into account.
         Appends '_th2' after the TH2's name, use the original name for the TH1.
@@ -40,15 +40,15 @@ def flattenLowerRightDiagonalTH2(skipRows=0, rebin=1):
         elif "TH2F" in th2.ClassName():
             thClass = R.TH1F
         else:
-            raise Exception(" I don't know what a {} is".format(th2.ClassName()))
+            raise Exception("I don't know what a {} is".format(th2.ClassName()))
         th1 = thClass(name, th2.GetTitle(), nBins, 1., nBins+1.)
         th1.SetDirectory(0)
         th1.Sumw2()
 
         th1Bin = 1
         # Don't start at the first row if asked
-        for y in range(1+skipRows, nBinsX+1):
-            for x in range(y, nBinsX+1):
+        for x in range(1+skipRows, nBinsX+1):
+            for y in range(x, nBinsX+1):
                 assert(th1Bin <= nBins)
                 # print("Bin {},{}: content = {}".format(x, y, th2.GetBinContent(x, y)))
                 th1.SetBinContent(th1Bin, th2.GetBinContent(x, y))
@@ -60,7 +60,7 @@ def flattenLowerRightDiagonalTH2(skipRows=0, rebin=1):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Flatten all TH2s in the input file to keep the bins including and below the diagonal as a TH1 (does NOT use under- or overflow for now), i.e. x >= y.\nWrite these TH1s in the output file with the same directory structure as the input.')
+    parser = argparse.ArgumentParser(description='Flatten all TH2s in the input file to keep the bins including and above the diagonal as a TH1 (does NOT use under- or overflow for now), i.e. x<=y.\nWrite these TH1s in the output file with the same directory structure as the input.')
     
     parser.add_argument('-i', '--input', type=str, required=True, help='Input ROOT file')
     parser.add_argument('-o', '--output', type=str, required=True, help='Output ROOT file')

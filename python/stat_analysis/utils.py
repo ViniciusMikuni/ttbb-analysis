@@ -100,6 +100,11 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         # define initial "nominal" QCD estimate by subtracting total from data
         QCD_subtr = all_histos[cat]['data_obs'].Clone('QCD_subtr')
         QCD_subtr.Add(total, -1)
+        # check for negative bins, set to 1 by default
+        for i in range(1, Nbins+2):
+            if QCD_subtr.GetBinContent(i) <= 0:
+                print("WARNING: region {}, bin {}: QCD subtr is negative!".format(cat, i))
+                QCD_subtr.SetBinContent(i, 1.)
         all_histos[cat]['QCD_subtr'] = QCD_subtr
         
         est_QCD_yields[cat] = QCD_subtr.Integral()

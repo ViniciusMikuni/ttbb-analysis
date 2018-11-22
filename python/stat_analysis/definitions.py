@@ -24,56 +24,52 @@ other_bkg = [
 
 exp_systs = [
         'CMS_btag_hf',
-        'CMS_btag_hfstats1',
-        'CMS_btag_hfstats2',
-        'CMS_btag_lf',
-        'CMS_btag_lfstats1',
-        'CMS_btag_lfstats2',
+        # 'CMS_btag_hfstats1',
+        # 'CMS_btag_hfstats2',
+        # 'CMS_btag_lf',
+        # 'CMS_btag_lfstats1',
+        # 'CMS_btag_lfstats2',
         'CMS_btag_cferr1',
         'CMS_btag_cferr2',
         
         'CMS_qg_Weight',
         'CMS_pu_Weight',
-        'CMS_trig_Weight',
+        # 'CMS_trig_Weight',
 
-        'CMS_AbsoluteStat_j',
-        'CMS_AbsoluteScale_j',
-        'CMS_AbsoluteMPFBias_j',
-        'CMS_Fragmentation_j',
-        'CMS_SinglePionECAL_j',
-        'CMS_SinglePionHCAL_j',
-        'CMS_FlavorQCD_j',
-        'CMS_TimePtEta_j',
-        # 'CMS_RelativeJEREC1_j', # almost zero?
-        # 'CMS_RelativeJEREC2_j', # zero?
-        # 'CMS_RelativeJERHF_j', # zero?
-        'CMS_RelativePtBB_j',
-        'CMS_RelativePtEC1_j',
-        # 'CMS_RelativePtEC2_j', # zero?
-        # 'CMS_RelativePtHF_j', # zero?
-        'CMS_RelativeBal_j',
-        'CMS_RelativeFSR_j',
-        'CMS_RelativeStatFSR_j',
-        'CMS_RelativeStatEC_j',
-        # 'CMS_RelativeStatHF_j', # zero?
-        'CMS_PileUpDataMC_j',
-        'CMS_PileUpPtRef_j',
-        'CMS_PileUpPtBB_j',
-        'CMS_PileUpPtEC1_j',
-        # 'CMS_PileUpPtEC2_j', # not even produced because zero
-        # 'CMS_PileUpPtHF_j', # zero?
+        # 'CMS_AbsoluteStat_j',
+        # 'CMS_AbsoluteScale_j',
+        # 'CMS_AbsoluteMPFBias_j',
+        # 'CMS_Fragmentation_j',
+        # 'CMS_SinglePionECAL_j',
+        # 'CMS_SinglePionHCAL_j',
+        # 'CMS_FlavorQCD_j',
+        # 'CMS_TimePtEta_j',
+        # # 'CMS_RelativeJEREC1_j', # almost zero?
+        # # 'CMS_RelativeJEREC2_j', # zero?
+        # # 'CMS_RelativeJERHF_j', # zero?
+        # 'CMS_RelativePtBB_j',
+        # 'CMS_RelativePtEC1_j',
+        # # 'CMS_RelativePtEC2_j', # zero?
+        # # 'CMS_RelativePtHF_j', # zero?
+        # 'CMS_RelativeBal_j',
+        # 'CMS_RelativeFSR_j',
+        # 'CMS_RelativeStatFSR_j',
+        # 'CMS_RelativeStatEC_j',
+        # # 'CMS_RelativeStatHF_j', # zero?
+        # 'CMS_PileUpDataMC_j',
+        # 'CMS_PileUpPtRef_j',
+        # 'CMS_PileUpPtBB_j',
+        # 'CMS_PileUpPtEC1_j',
+        # # 'CMS_PileUpPtEC2_j', # not even produced because zero
+        # # 'CMS_PileUpPtHF_j', # zero?
         
-        'CMS_JER_j',
+        # 'CMS_JER_j',
     ]
 
 theory_shape_systs = [
-        (tt_bkg + sig_processes, 'CMS_top_Weight'),
-        (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEscale_Weight'),
-        (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEPDF_Weight'),
-        # (tt_bkg + sig_processes, 'isr'),
-        # (tt_bkg + sig_processes, 'fsr'),
-        # (tt_bkg + sig_processes, 'tune'),
-        # (tt_bkg + sig_processes, 'hdamp'),
+        # (tt_bkg + sig_processes, 'CMS_top_Weight'),
+        # (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEscale_Weight'),
+        # (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEPDF_Weight'),
 ]
 
 # Only used for "shape_direct" method!

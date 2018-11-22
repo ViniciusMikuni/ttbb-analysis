@@ -8,22 +8,22 @@ R.gROOT.SetBatch(True)
 
 tf = R.TFile.Open("processed_shapes.root")
 
-cr1 = tf.Get("CR1/QCD_subtr")
+cr1 = tf.Get("CR1/QCDMC_CR1")
 cr2 = tf.Get("CR2/QCD_subtr")
 vr = tf.Get("VR/QCD_subtr")
-sr = tf.Get("SR/QCD_subtr")
+sr = tf.Get("SR/QCDMC_SR")
 
 cr1.Divide(sr)
 cr2.Divide(vr)
 
 c = R.TCanvas()
 
-cr1.SetTitle("CR1/SR")
-cr1.GetXaxis().SetTitle("BLR")
+cr1.SetTitle("CR1/SR (MC)")
+cr1.GetXaxis().SetTitle("Unrolled 2D CSV bins")
 cr1.GetXaxis().SetTitleSize(0.04)
 cr1.GetXaxis().SetLabelSize(0.03)
 cr1.GetYaxis().SetLabelSize(0.03)
-cr2.SetTitle("CR2/VR")
+cr2.SetTitle("CR2/VR (data)")
 cr1.SetLineColor(46)
 cr1.SetMarkerColor(46)
 cr2.SetLineColor(38)
