@@ -24,8 +24,9 @@ def main():
     parser.add_argument('--bbb', action='store_true', help='Add bin-by-bin uncertainties')
     parser.add_argument('--fit-mode', dest='fit_mode', choices=['shape_direct', 'shape_CR1', 'abcd'], help='Fit mode')
     parser.add_argument('--qcd-systs', dest='QCD_systs', action='store_true', help='If mode is "shape_CR1", add uncertainty on the QCD shape from the VR/CR2 ratio')
-    parser.add_argument('--equal-bins', dest='equalBins', action='store_true', help='Modify templates to have equal-width bins numbered 1 through nBins, without changing the bin contents. Makes plotting easier if some bins are very fine.')
-    parser.add_argument('--rate-systs', dest='rateSysts', type=str, default=None, help='Input JSON file with rate systematics in the four regions')
+    parser.add_argument('--equal-bins', dest='equal_bins', action='store_true', help='Modify templates to have equal-width bins numbered 1 through nBins, without changing the bin contents. Makes plotting easier if some bins are very fine.')
+    parser.add_argument('--rate-systs', dest='rate_systs', type=str, default=None, help='Input JSON file with rate systematics in the four regions')
+    parser.add_argument('--sub-folder', dest='sub_folder', type=str, default=None, help='Select sub-folder inside the input ROOT file')
     parser.add_argument('-o', '--output', type=str, help='Output directory')
 
     options = parser.parse_args()
@@ -58,12 +59,11 @@ def prepareShapesAndCards(options):
         print('-- QCD etimation: bin-by-bin ABCD using the four regions --')
     
     processed_shapes = os.path.join(options.output, 'processed_shapes.root')
-    QCD_VR_ratios, est_QCD_yields, QCD_shape_CR1, QCD_shape_CR2 = utils.extractShapes(options.input, processed_shapes, defs.tt_bkg + defs.other_bkg, defs.sig_processes, options.data, equalBins=options.equalBins)
+    QCD_VR_ratios, est_QCD_yields, QCD_shape_CR1, QCD_shape_CR2 = utils.extractShapes(options.input, processed_shapes, defs.tt_bkg + defs.other_bkg, defs.sig_processes, options.data, equal_bins=options.equal_bins, sub_folder=options.sub_folder)
     Nbins = len(QCD_VR_ratios)
 
     cb.AddObservations(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], cats)
     
-    # cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], defs.sig_processes, [cats[0], cats[2]], True)
     cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], defs.sig_processes, cats, True)
 
     cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], defs.tt_bkg + defs.other_bkg, cats, False)
@@ -109,10 +109,10 @@ def prepareShapesAndCards(options):
             cbWithoutQCD.AddSyst(cb, name, syst[0], syst[1])
 
         # Theory rate uncertainties from the YML file
-        if options.rateSysts is not None:
-            rateSysts = addRateSystematics(cb, options.rateSysts)
+        if options.rate_systs is not None:
+            rate_systs = addRateSystematics(cb, options.rate_systs, options.sub_folder)
         else:
-            rateSysts = []
+            rate_systs = []
         
     ### QCD systematics: add a lnN for each bin using the ratio QCD_subtr/QCD_est in the VR
     if options.QCD_systs:
@@ -174,11 +174,12 @@ def prepareShapesAndCards(options):
             "theory": [ s[1] for s in defs.theory_shape_systs ],
             "exp": defs.exp_systs,
             "QCD": paramListQCD,
+            "extern": defs.externalised_nuisances,
         }
     if options.fit_mode == 'shape_direct':
         syst_groups['theory'] += [ s[1] for s in defs.fake_lnN_systs ]
     else:
-        syst_groups['theory'] += defs.theory_rate_list + rateSysts
+        syst_groups['theory'] += defs.theory_rate_list + rate_systs
 
     def getNuisanceGroupString(groups):
         m_str = ""
@@ -223,6 +224,11 @@ def prepareShapesAndCards(options):
 if [[ ! -f workspace.root ]]; then
     text2workspace.py datacard.dat -o workspace.root
 fi
+
+RMIN=0.
+RMAX=2.0
+NPOINTS=50
+FIT_OPT=( --freezeNuisanceGroups=extern --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 )
 """
 
     def createScript(content, filename):
@@ -236,27 +242,18 @@ fi
 
     # Script: simple fits
     script = """
-RMIN=0.
-RMAX=2.0
-FIT_OPT=( --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 )
-
 combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t -1 --algo singles --autoBoundsPOIs "*" "${FIT_OPT[@]}"
 # combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 --saveShapes --saveNormalizations --saveWithUncertainties --plots "${FIT_OPT[@]}"
 #combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t 1000 --toysFrequentist > /dev/null
 """
-
     createScript(script, 'do_fit.sh')
 
 
     # Script: plots of NLL vs. r for different uncertainties
     script = """
-NPOINTS=50
-RMIN=0.
-RMAX=2.0
-
-combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _nominal workspace.root
-combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root
-combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _stat -S 0 workspace.root
+combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _nominal workspace.root "${FIT_OPT[@]}"
+combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root "${FIT_OPT[@]}"
+combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _stat -S 0 workspace.root "${FIT_OPT[@]}"
 # combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX --expectSignal=1 -n stat --freezeParameters all --fastScan workspace.root
 # plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown syst,stat
 plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_theory.MultiDimFit.mH120.root:Freeze theory:4' 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown theory,syst,stat
@@ -281,10 +278,6 @@ plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine
 
     # Script: impacts signal injected
     script = """
-RMIN=0.
-RMAX=2.
-FIT_OPT=( --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 )
-
 mkdir impacts
 pushd impacts
 
@@ -301,10 +294,10 @@ popd
     # Script: plots of NLL vs. ALL QCD rate parameters
     script = """
 function scan_param() {
-    combine -M MultiDimFit --algo grid --points 50 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1=0.5,1.5 --redefineSignalPOIs $1
+    combine -M MultiDimFit --algo grid --points 50 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1=0.5,1.5 --redefineSignalPOIs $1 "${FIT_OPT[@]}"
     plot1DScan.py higgsCombine_$1.MultiDimFit.mH120.root --output scan_$1 --POI $1
 }
-export -f scan_param
+export -f scan_param # needed for parallel
 
 mkdir QCD_scans
 pushd QCD_scans
@@ -314,7 +307,7 @@ popd
     createScript(script, 'do_QCD_scans.sh')
 
 
-def addRateSystematics(cb, json_path):
+def addRateSystematics(cb, json_path, sub_folder=None):
     # JSON is encoded as UTF8 by default, and that messes with the combineHarvester bindings
     def ascii_encode_dict(data):
         def ascii_encode(x):
@@ -324,6 +317,9 @@ def addRateSystematics(cb, json_path):
 
     with open(json_path) as _f:
         systs = json.load(_f, object_hook=ascii_encode_dict)
+
+    if sub_folder is not None:
+        systs = systs[sub_folder]
 
     # Load all systematics in easier order
     # newSysts[systematic] = [ (cat, proc, (down, up)), ... ]

@@ -4,7 +4,7 @@ import re
 
 from HistogramTools import getEnvelopeHistograms, equaliseBins
 
-def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, lumi_scale=None, equalBins=False):
+def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, lumi_scale=None, equal_bins=False, sub_folder=None):
     """
     Extract the shapes from input_filename and prepare them for combineHarvester in output_filename.
     The output file should contain directories named after the categories, containing histograms named as '$PROCESS' or '$PROCESS_$SYST(Up|Down)'
@@ -13,7 +13,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         - In the CR1 and SR, define 'delta' histograms named 'QCD_bin_{i=1..N}' that will serve to estimate QCD from a combined fit of CR1 and SR. Each histogram is zero everywhere but in bin i the yield is set as the estimated QCD in that bin (esimated = by subtraction in CR1 and CR2, and in SR and VR it's the from the corresponding CR scaled to the total expected)
         - If real_data is False, redefine data_obs in the SR as the sum of all background estimates (with QCD normalised to the total data in the SR)
         - lumi_scale: use to scale all yields by some factor
-        - equalBins: if True, will recreate new histograms with equal-size bins (easier for plotting)
+        - equal_bins: if True, will recreate new histograms with equal-size bins (easier for plotting)
 
     Returns:
         - a list of ratios QCD_data/QCD_est (per bin) in the VR, to define the systematic on QCD in the SR
@@ -33,7 +33,10 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
     categories = ['CR1', 'CR2', 'VR', 'SR']
     
     for cat in categories:
-        m_dir = tf.GetDirectory(cat)
+        path = cat
+        if sub_folder is not None:
+            path = sub_folder + '/' + cat
+        m_dir = tf.GetDirectory(path)
         all_histos[cat] = {}
         # print('Moving to {}'.format(cat))
         for key in m_dir.GetListOfKeys():
@@ -44,9 +47,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
                 # All histos must be positive...
                 for i in range(th1.GetNbinsX() + 2):
                     if th1.GetBinContent(i) < 0: th1.SetBinContent(i, 0)
-                    # if 'QCD' not in key.GetName():
-                        # th1.SetBinError(i, 0)
-                if equalBins:
+                if equal_bins:
                     myTH1 = equaliseBins(th1)
                 else:
                     myTH1 = th1
