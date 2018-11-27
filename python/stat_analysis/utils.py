@@ -102,12 +102,12 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         QCD_subtr = all_histos[cat]['data_obs'].Clone('QCD_subtr')
         QCD_subtr.Add(total, -1)
         # check for negative bins, set to 1 by default
-        for i in range(1, Nbins+2):
+        for i in range(1, Nbins+1):
             if QCD_subtr.GetBinContent(i) <= 0:
                 print("WARNING: region {}, bin {}: QCD subtr is negative!".format(cat, i))
                 QCD_subtr.SetBinContent(i, 1.)
         all_histos[cat]['QCD_subtr'] = QCD_subtr
-        
+ 
         est_QCD_yields[cat] = QCD_subtr.Integral()
         print('QCD yield estimated by subtraction in {}: {}'.format(cat, est_QCD_yields[cat]))
 
@@ -132,10 +132,11 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
     # If fake data, define data_obs in SR as the sum of MC backgrounds plus QCD estimate
     # (so using shape from CR1 but overall normalisation from data in SR)
     if not real_data:
-        data_obs = all_histos['SR']['data_obs']
-        data_obs.Reset()
-        data_obs.Add(all_histos['SR']['mc_total'])
-        data_obs.Add(all_histos['SR']['QCD_est'])
+        for cat in ['SR', 'VR']:
+            data_obs = all_histos[cat]['data_obs']
+            data_obs.Reset()
+            data_obs.Add(all_histos[cat]['mc_total'])
+            data_obs.Add(all_histos[cat]['QCD_est'])
 
     # Compute ratios of QCD_subtr over QCD_est for each bin of the VR template
     # NOTE: not used anymore for ABCD setup
@@ -149,7 +150,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
 
     # Define 'delta' histograms for each bin in all categories
     # Yield = estimated yield
-    for cat in categories: #['CR1', 'SR']:
+    for cat in categories:
         for i in range(1, Nbins + 1):
             name = 'QCD_bin_{}'.format(i)
             delta = total.Clone(name)

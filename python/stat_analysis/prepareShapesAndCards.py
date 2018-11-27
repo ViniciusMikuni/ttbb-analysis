@@ -172,7 +172,7 @@ def prepareShapesAndCards(options):
     # Define systematic groups
     syst_groups = {
             "theory": [ s[1] for s in defs.theory_shape_systs ],
-            "exp": defs.exp_systs,
+            "exp": defs.exp_systs + [ 'lumi_13TeV_2016' ],
             "QCD": paramListQCD,
             "extern": defs.externalised_nuisances,
         }
@@ -252,11 +252,11 @@ combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSigna
     # Script: plots of NLL vs. r for different uncertainties
     script = """
 combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _nominal workspace.root "${FIT_OPT[@]}"
-combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root "${FIT_OPT[@]}"
+# combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root "${FIT_OPT[@]}"
 combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _stat -S 0 workspace.root "${FIT_OPT[@]}"
 # combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX --expectSignal=1 -n stat --freezeParameters all --fastScan workspace.root
-# plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown syst,stat
-plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_theory.MultiDimFit.mH120.root:Freeze theory:4' 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown theory,syst,stat
+plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown syst,stat
+# plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_theory.MultiDimFit.mH120.root:Freeze theory:4' 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown theory,syst,stat
 
 #combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _freeze_jet workspace.root --freezeParameters 'rgx{CMS_.*_j$}'
 #plot1DScan.py higgsCombine_freeze_jet.MultiDimFit.mH120.root --output scan_freeze_jet
