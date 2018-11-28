@@ -19,15 +19,16 @@ def main():
 
     parser = argparse.ArgumentParser(description='Create shape datacards ready for combine')
 
-    parser.add_argument('-i', '--input', type=str, help='Input ROOT file containing templates')
+    parser.add_argument('-i', '--input', required=True, help='Input ROOT file containing templates')
     parser.add_argument('-d', '--data', action='store_true', help='Use real data in SIGNAL REGION (by default, will transfer QCD shape from the CR1) - for now Asimov datasets are always used.')
     parser.add_argument('--bbb', action='store_true', help='Add bin-by-bin uncertainties')
-    parser.add_argument('--fit-mode', dest='fit_mode', choices=['shape_direct', 'shape_CR1', 'abcd'], help='Fit mode')
+    parser.add_argument('--fit-mode', required=True, choices=['shape_CR1', 'abcd'], help='Fit mode')
     parser.add_argument('--qcd-systs', dest='QCD_systs', action='store_true', help='If mode is "shape_CR1", add uncertainty on the QCD shape from the VR/CR2 ratio')
     parser.add_argument('--equal-bins', dest='equal_bins', action='store_true', help='Modify templates to have equal-width bins numbered 1 through nBins, without changing the bin contents. Makes plotting easier if some bins are very fine.')
-    parser.add_argument('--rate-systs', dest='rate_systs', type=str, default=None, help='Input JSON file with rate systematics in the four regions')
-    parser.add_argument('--sub-folder', dest='sub_folder', type=str, default=None, help='Select sub-folder inside the input ROOT file')
-    parser.add_argument('-o', '--output', type=str, help='Output directory')
+    parser.add_argument('--rate-systs', nargs='*', help='Input any JSON files with theory rate systematics in the four regions')
+    parser.add_argument('--exp-rate', nargs='*', help='Input any JSON files with experimental rate systematics in the four regions')
+    parser.add_argument('--sub-folder', help='Select sub-folder inside the input ROOT file')
+    parser.add_argument('-o', '--output', required=True, help='Output directory')
 
     options = parser.parse_args()
 
@@ -38,11 +39,7 @@ def prepareShapesAndCards(options):
 
     cb = ch.CombineHarvester()
 
-    if options.fit_mode == 'shape_direct':
-        cats = [(1,'SR')]
-        print('-- QCD estimation: take shape directly from CR1 --')
-
-    elif options.fit_mode == 'shape_CR1':
+    if options.fit_mode == 'shape_CR1':
         cats = [
             (1, 'SR'),
             (2, 'CR1')
@@ -68,51 +65,51 @@ def prepareShapesAndCards(options):
 
     cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], defs.tt_bkg + defs.other_bkg, cats, False)
 
-    if options.fit_mode == 'shape_direct':
-        cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], ['QCD'], cats, False)
-    
-    elif options.fit_mode in ['shape_CR1', 'abcd']:
-        ### QCD estimate: add all "delta" templates
-        QCD_processes = [ 'QCD_bin_{}'.format(i+1) for i in range(Nbins) ]
-        cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], QCD_processes, cats, False)
+    ### QCD estimate: add all "delta" templates
+    QCD_processes = [ 'QCD_bin_{}'.format(i+1) for i in range(Nbins) ]
+    cb.AddProcesses(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], QCD_processes, cats, False)
 
 
     ### Systematics
+    added_theory_systs = []
+    added_exp_systs = []
 
-    if options.fit_mode == 'shape_direct':
-        # We take the "fake" shape uncertainties on the QCD shape
-        cb.AddSyst(cb, 'lumi', 'shape', ch.SystMap()(1.))
-        for s in defs.exp_systs:
-            cb.AddSyst(cb, s, 'shape', ch.SystMap()(1.))
-        for s in defs.theory_shape_systs:
-            cb.cp().process(s[0] + ['QCD']).AddSyst(cb, s[1], 'shape', ch.SystMap()(1.))
-        for s in defs.fake_lnN_systs:
-            cb.cp().process(s[0] + ['QCD']).AddSyst(cb, s[1], 'shape', ch.SystMap()(1.))
+    # Modeling systematics, not on QCD! ###
+    cbWithoutQCD = cb.cp().process_rgx(['QCD.*'], False)
+    
+    # Theory rate uncertainties from the JSON file
+    if options.rate_systs is not None:
+        for json_file in options.rate_systs:
+            added_theory_systs += addRateSystematics(cb, json_file, options.sub_folder)
+    
+    # Experimental rate uncertainties from the JSON file
+    if options.exp_rate is not None:
+        for json_file in options.exp_rate:
+            added_exp_systs += addRateSystematics(cb, json_file, options.sub_folder)
 
-    else:
-        # Modeling systematics, not on QCD! ###
-        cbWithoutQCD = cb.cp().process_rgx(['QCD.*'], False)
+    # Luminosity
+    cbWithoutQCD.AddSyst(cb, 'lumi_$ERA', 'lnN', ch.SystMap('era')(['13TeV_2016'], defs.getLumiUncertainty('13TeV_2016')))
+    added_exp_systs.append('lumi_13TeV_2016')
 
-        # Luminosity
-        cbWithoutQCD.AddSyst(cb, 'lumi_$ERA', 'lnN', ch.SystMap('era')(['13TeV_2016'], defs.getLumiUncertainty('13TeV_2016')))
-
-        # Experimental systematics, common for all processes and categories
-        for s in defs.exp_systs:
+    # Experimental systematics, common for all processes and categories
+    for s in defs.exp_systs:
+        # If we have added it already as a rate systematics, skip it!
+        if s not in added_exp_systs:
+            added_exp_systs.append(s)
             cbWithoutQCD.AddSyst(cb, s, 'shape', ch.SystMap()(1.))
-        
-        # Theory shape systematics
-        for syst in defs.theory_shape_systs:
+
+    # Theory shape systematics
+    for syst in defs.theory_shape_systs:
+        if syst[1] not in added_theory_systs:
+            added_theory_systs.append(syst[1])
             cbWithoutQCD.cp().process(syst[0]).AddSyst(cb, syst[1], 'shape', ch.SystMap()(1.))
-        
-        # Theory rate systematics
-        for name,syst in defs.theory_rate_systs.items():
+    
+    # Theory rate systematics (not taken from JSON)
+    for name,syst in defs.theory_rate_systs.items():
+        if not name in added_theory_systs:
+            added_theory_systs.append(name)
             cbWithoutQCD.AddSyst(cb, name, syst[0], syst[1])
 
-        # Theory rate uncertainties from the YML file
-        if options.rate_systs is not None:
-            rate_systs = addRateSystematics(cb, options.rate_systs, options.sub_folder)
-        else:
-            rate_systs = []
         
     ### QCD systematics: add a lnN for each bin using the ratio QCD_subtr/QCD_est in the VR
     if options.QCD_systs:
@@ -128,15 +125,7 @@ def prepareShapesAndCards(options):
     # To define nuisance group with all QCD parameters
     paramListQCD = []
     
-    if options.fit_mode == 'shape_direct':
-        ### QCD estimate: freely floating
-        extraStrForQCD += 'rate_QCD rateParam SR QCD 1. [0.,2.]\n'
-        paramListQCD.append('rate_QCD')
-        
-        if options.QCD_systs:
-            paramListQCD.append('bkg_extrap')
-    
-    elif options.fit_mode == 'shape_CR1':
+    if options.fit_mode == 'shape_CR1':
         ### QCD estimate: fit shape from CR1, normalisation floating
         extraStrForQCD += 'scale_ratio_QCD_CR1_SR extArg 1. [0.,2.]\n'
         paramListQCD.append('scale_ratio_QCD_CR1_SR')
@@ -171,15 +160,11 @@ def prepareShapesAndCards(options):
 
     # Define systematic groups
     syst_groups = {
-            "theory": [ s[1] for s in defs.theory_shape_systs ],
-            "exp": defs.exp_systs + [ 'lumi_13TeV_2016' ],
+            "theory": added_theory_systs,
+            "exp": added_exp_systs,
             "QCD": paramListQCD,
             "extern": defs.externalised_nuisances,
         }
-    if options.fit_mode == 'shape_direct':
-        syst_groups['theory'] += [ s[1] for s in defs.fake_lnN_systs ]
-    else:
-        syst_groups['theory'] += defs.theory_rate_list + rate_systs
 
     def getNuisanceGroupString(groups):
         m_str = ""
@@ -251,6 +236,8 @@ combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSigna
 
     # Script: plots of NLL vs. r for different uncertainties
     script = """
+RMIN=0.6
+RMAX=1.6
 combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _nominal workspace.root "${FIT_OPT[@]}"
 # combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root "${FIT_OPT[@]}"
 combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _stat -S 0 workspace.root "${FIT_OPT[@]}"

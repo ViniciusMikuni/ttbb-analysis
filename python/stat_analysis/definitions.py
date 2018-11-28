@@ -36,6 +36,7 @@ exp_systs = [
         'CMS_pu_Weight',
         'CMS_trig_Weight',
 
+        # 'CMS_Total_j', # TOTAL JEC
         'CMS_AbsoluteStat_j',
         'CMS_AbsoluteScale_j',
         'CMS_AbsoluteMPFBias_j',
@@ -153,6 +154,10 @@ theory_rate_systs = {
 # Impact estimated by repeating fit while shifting nuisance up and down
 externalised_nuisances = [
     'CMS_top_Weight',
+    'GluonMoveCRTune',
+    'QCDbasedCRTune',
+    'GluonMoveCRTune_erdON',
+    'erdOn',
 ]
 
 def getNuisanceFromTemplate(key, syst):

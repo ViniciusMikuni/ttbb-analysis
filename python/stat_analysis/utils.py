@@ -2,7 +2,7 @@ import ROOT as R
 import os
 import re
 
-from HistogramTools import getEnvelopeHistograms, equaliseBins
+from HistogramTools import getEnvelopeHistograms, equaliseBins, openFileAndGet
 
 def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, lumi_scale=None, equal_bins=False, sub_folder=None):
     """
@@ -21,10 +21,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         - the expected nominal shape of QCD in the SR
     """
 
-    tf = R.TFile.Open(input_filename)
-
-    if not tf.IsOpen():
-        raise Exception("Could not open file {}".format(input_filename))
+    tf = openFileAndGet(input_filename)
 
     # Read all histograms, put them in a dictionary with key = category
     all_histos = {}
@@ -165,7 +162,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
     # Write results to output file
     if not os.path.exists(os.path.dirname(output_filename)):
         os.makedirs(os.path.dirname(output_filename))
-    out_tf = R.TFile(output_filename, 'recreate')
+    out_tf = openFileAndGet(output_filename, 'recreate')
 
     for cat in all_histos:
         out_tf.mkdir(cat).cd()
