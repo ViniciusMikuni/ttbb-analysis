@@ -9,7 +9,7 @@ tt_bkg = [
 # FIXME
 sig_processes = [
         'ttbb',
-        'ttbb_other',
+        # 'ttbb_other',
         'ttb_other',
         # 'tt2b'
     ]
@@ -69,46 +69,9 @@ exp_systs = [
 
 theory_shape_systs = [
         (tt_bkg + sig_processes, 'CMS_top_Weight'),
-        (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEscale_Weight'),
-        (tt_bkg + sig_processes + ['ttH'], 'CMS_LHEPDF_Weight'),
+        (tt_bkg + sig_processes, 'CMS_LHEscale_Weight'),
+        (tt_bkg + sig_processes, 'CMS_LHEPDF_Weight'),
 ]
-
-# Only used for "shape_direct" method!
-fake_lnN_systs = [        
-        # all shapes variations are normalised to the same yield
-        # lnN nuisances take care of the yield
-        # -> should be a single nuisance
-        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'QCD_scale_tt'),
-        (['ttH'], 'QCD_scale_ttH'),
-        (['stop'], 'QCD_scale_t'),
-        (['VV'], 'QCD_scale_VV'),
-        (['VJ'], 'QCD_scale_V'),
-        (['ttbb', 'ttcc', 'ttlf', 'ttV'], 'pdf_gg'),
-        (['ttV', 'VV', 'VJ'], 'pdf_qqbar'),
-        (['stop'], 'pdf_qg'),
-        
-        # NOT actual shape uncertainties!
-        (['ttbb'], 'ttbb_FSR'),
-        (['ttbb'], 'ttbb_ISR'),
-        (['ttbb'], 'ttbb_tune'),
-        (['ttbb'], 'ttbb_hdamp'),
-        (['ttbb_other'], 'ttbb_other_FSR'),
-        (['ttbb_other'], 'ttbb_other_ISR'),
-        (['ttbb_other'], 'ttbb_other_tune'),
-        (['ttbb_other'], 'ttbb_other_hdamp'),
-        (['ttb_other'], 'ttb_other_FSR'),
-        (['ttb_other'], 'ttb_other_ISR'),
-        (['ttb_other'], 'ttb_other_tune'),
-        (['ttb_other'], 'ttb_other_hdamp'),
-        (['ttcc'], 'ttcc_FSR'),
-        (['ttcc'], 'ttcc_ISR'),
-        (['ttcc'], 'ttcc_tune'),
-        (['ttcc'], 'ttcc_hdamp'),
-        (['ttlf'], 'ttlf_FSR'),
-        (['ttlf'], 'ttlf_ISR'),
-        (['ttlf'], 'ttlf_tune'),
-        (['ttlf'], 'ttlf_hdamp'),
-    ]
 
 theory_rate_systs = {
         # FIXME 50% uncertainty on ttcc?
@@ -158,6 +121,14 @@ externalised_nuisances = [
     'QCDbasedCRTune',
     'GluonMoveCRTune_erdON',
     'erdOn',
+]
+
+# Decorrelated theory uncertainties between various ttXX components (separately signals, ttcc and ttjj)
+factorised_ttbar_theory = [
+    "CMS_LHEscale_Weight",
+    "fsr",
+    "isr",
+    "hdamp",
 ]
 
 def getNuisanceFromTemplate(key, syst):

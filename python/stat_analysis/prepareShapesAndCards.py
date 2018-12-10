@@ -28,6 +28,7 @@ def main():
     parser.add_argument('--rate-systs', nargs='*', help='Input any JSON files with theory rate systematics in the four regions')
     parser.add_argument('--exp-rate', nargs='*', help='Input any JSON files with experimental rate systematics in the four regions')
     parser.add_argument('--sub-folder', help='Select sub-folder inside the input ROOT file')
+    parser.add_argument('--fact-theory', action='store_true', help='Factorise some theory uncertainties among ttXX components')
     parser.add_argument('-o', '--output', required=True, help='Output directory')
 
     options = parser.parse_args()
@@ -54,9 +55,24 @@ def prepareShapesAndCards(options):
             (4, 'CR2'),
         ]
         print('-- QCD etimation: bin-by-bin ABCD using the four regions --')
+
+    # Handle factorised uncertainties for ttbar components
+    theory_shape_systs = []
+    if options.fact_theory:
+        fact_theory = defs.factorised_ttbar_theory
+        for procs, syst in defs.theory_shape_systs:
+            if syst in fact_theory:
+                theory_shape_systs.append((defs.sig_processes, syst + "_ttbb"))
+                theory_shape_systs.append((['ttcc'], syst + "_ttcc"))
+                theory_shape_systs.append((['ttlf'], syst + "_ttlf"))
+            else:
+                theory_shape_systs.append((procs, syst))
+    else:
+        fact_theory = None
+        theory_shape_systs = defs.theory_shape_systs
     
     processed_shapes = os.path.join(options.output, 'processed_shapes.root')
-    QCD_VR_ratios, est_QCD_yields, QCD_shape_CR1, QCD_shape_CR2 = utils.extractShapes(options.input, processed_shapes, defs.tt_bkg + defs.other_bkg, defs.sig_processes, options.data, equal_bins=options.equal_bins, sub_folder=options.sub_folder)
+    QCD_VR_ratios, est_QCD_yields, QCD_shape_CR1, QCD_shape_CR2 = utils.extractShapes(options.input, processed_shapes, defs.tt_bkg + defs.other_bkg, defs.sig_processes, options.data, fact_theory=fact_theory, equal_bins=options.equal_bins, sub_folder=options.sub_folder)
     Nbins = len(QCD_VR_ratios)
 
     cb.AddObservations(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], cats)
@@ -80,7 +96,7 @@ def prepareShapesAndCards(options):
     # Theory rate uncertainties from the JSON file
     if options.rate_systs is not None:
         for json_file in options.rate_systs:
-            added_theory_systs += addRateSystematics(cb, json_file, options.sub_folder)
+            added_theory_systs += addRateSystematics(cb, json_file, options.sub_folder, fact_theory)
     
     # Experimental rate uncertainties from the JSON file
     if options.exp_rate is not None:
@@ -99,7 +115,7 @@ def prepareShapesAndCards(options):
             cbWithoutQCD.AddSyst(cb, s, 'shape', ch.SystMap()(1.))
 
     # Theory shape systematics
-    for syst in defs.theory_shape_systs:
+    for syst in theory_shape_systs:
         if syst[1] not in added_theory_systs:
             added_theory_systs.append(syst[1])
             cbWithoutQCD.cp().process(syst[0]).AddSyst(cb, syst[1], 'shape', ch.SystMap()(1.))
@@ -145,13 +161,30 @@ def prepareShapesAndCards(options):
         ### QCD estimate: add the rate params for each bin in the CR1, CR2 and VR
         ### The yield in the SR is then expressed as CR1*VR/CR2
         for i in range(1, Nbins+1):
-            extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} 1. [0.,2.]\n'.format(i)
-            extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} 1. [0.,2.]\n'.format(i)
-            extraStrForQCD += 'yield_QCD_VR_bin_{0} rateParam VR QCD_bin_{0} 1. [0.,2.]\n'.format(i)
+            # yield_CR2 = est_QCD_yields['CR2'] * QCD_shape_CR2[i-1]
+            # yield_CR1 = est_QCD_yields['CR1'] * QCD_shape_CR1[i-1]
+            # yield_VR = est_QCD_yields['VR'] * QCD_shape_CR2[i-1]
+            # extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} {1} [0,25000]\n'.format(i, yield_CR2)
+            # extraStrForQCD += 'ratio1_QCD_bin_{0} extArg {1} [0.,5.]\n'.format(i, yield_CR1 / yield_CR2)
+            # extraStrForQCD += 'ratio2_QCD_bin_{0} extArg {1} [0.,5.]\n'.format(i, yield_VR / yield_CR2)
+            # extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} 1. [0.,5.]\n'.format(i)
+            # extraStrForQCD += 'ratio1_QCD_bin_{0} extArg 1. [0.,5.]\n'.format(i)
+            # extraStrForQCD += 'ratio2_QCD_bin_{0} extArg 1. [0.,5.]\n'.format(i)
+            # extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} @0*@1 yield_QCD_CR2_bin_{0},ratio1_QCD_bin_{0}\n'.format(i)
+            # extraStrForQCD += 'yield_QCD_VR_bin_{0} rateParam VR QCD_bin_{0} @0*@1 yield_QCD_CR2_bin_{0},ratio2_QCD_bin_{0}\n'.format(i)
+        
+            # extraStrForQCD += 'yield_QCD_SR_bin_{0} rateParam SR QCD_bin_{0} @0*@1*@2 yield_QCD_CR2_bin_{0},ratio1_QCD_bin_{0},ratio2_QCD_bin_{0}\n'.format(i)
+            
+            # paramListQCD.append('yield_QCD_CR2_bin_{}'.format(i))
+            # paramListQCD.append('ratio1_QCD_bin_{}'.format(i))
+            # paramListQCD.append('ratio2_QCD_bin_{}'.format(i))
+    
+            extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} 1. [0.,5.]\n'.format(i)
+            extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} 1. [0.,5.]\n'.format(i)
+            extraStrForQCD += 'yield_QCD_VR_bin_{0} rateParam VR QCD_bin_{0} 1. [0.,5.]\n'.format(i)
         
             extraStrForQCD += 'yield_QCD_SR_bin_{0} rateParam SR QCD_bin_{0} (@0*@1/@2) yield_QCD_VR_bin_{0},yield_QCD_CR1_bin_{0},yield_QCD_CR2_bin_{0}\n'.format(i)
             
-            # We don't want the SR parameter in there, since it's dependent on the others?
             paramListQCD.append('yield_QCD_CR1_bin_{}'.format(i))
             paramListQCD.append('yield_QCD_CR2_bin_{}'.format(i))
             paramListQCD.append('yield_QCD_VR_bin_{}'.format(i))
@@ -211,25 +244,25 @@ if [[ ! -f workspace.root ]]; then
 fi
 
 RMIN=0.
-RMAX=2.0
+RMAX=5.0
 NPOINTS=50
-FIT_OPT=( --freezeNuisanceGroups=extern --robustFit=1 --setRobustFitAlgo Minuit2,Minos --setRobustFitStrategy 2 )
+FIT_OPT=( --freezeNuisanceGroups=extern --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 )
 """
 
     def createScript(content, filename):
         script_path = os.path.join(output_dir, filename)
         with open(script_path, 'w') as f:
             f.write(initWorkSpace)
-            f.write(script)
+            f.write(content)
         # make script executable
         st = os.stat(script_path)
         os.chmod(script_path, st.st_mode | stat.S_IEXEC)
 
     # Script: simple fits
     script = """
-combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t -1 --algo singles --autoBoundsPOIs "*" "${FIT_OPT[@]}"
-# combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 --saveShapes --saveNormalizations --saveWithUncertainties --plots "${FIT_OPT[@]}"
-#combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t 1000 --toysFrequentist > /dev/null
+combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t -1 --algo singles "${FIT_OPT[@]}"
+#combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 --saveShapes --saveNormalizations --saveWithUncertainties --plots "${FIT_OPT[@]}" --cminDefaultMinimizerPrecision 1E-12
+#combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal $1 -t 1000 -n _freq_$1 --toysFrequentist "${FIT_OPT[@]}" > freq_$1.log
 """
     createScript(script, 'do_fit.sh')
 
@@ -245,19 +278,19 @@ combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -
 plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown syst,stat
 # plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_theory.MultiDimFit.mH120.root:Freeze theory:4' 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown theory,syst,stat
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _freeze_jet workspace.root --freezeParameters 'rgx{CMS_.*_j$}'
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_jet workspace.root --freezeParameters 'rgx{CMS_.*_j$}'
 #plot1DScan.py higgsCombine_freeze_jet.MultiDimFit.mH120.root --output scan_freeze_jet
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _freeze_qg workspace.root --freezeParameters CMS_qg_Weight
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_qg workspace.root --freezeParameters CMS_qg_Weight
 #plot1DScan.py higgsCombine_freeze_qg.MultiDimFit.mH120.root --output scan_freeze_qg
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _freeze_btag workspace.root --freezeParameters 'rgx{.*btag.*}'
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_btag workspace.root --freezeParameters 'rgx{.*btag.*}'
 #plot1DScan.py higgsCombine_freeze_btag.MultiDimFit.mH120.root --output scan_freeze_btag
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _freeze_theory workspace.root --freezeNuisanceGroups theory
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_theory workspace.root --freezeNuisanceGroups theory
 #plot1DScan.py higgsCombine_freeze_theory.MultiDimFit.mH120.root --output scan_freeze_theory
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _freeze_exp workspace.root --freezeNuisanceGroups exp
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_exp workspace.root --freezeNuisanceGroups exp
 #plot1DScan.py higgsCombine_freeze_exp.MultiDimFit.mH120.root --output scan_freeze_exp
     """
     createScript(script, 'do_DeltaNLL_plot.sh')
@@ -269,32 +302,59 @@ mkdir impacts
 pushd impacts
 
 combineTool.py -M Impacts -d ../workspace.root -t -1 -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doInitialFit "${FIT_OPT[@]}"
-combineTool.py -M Impacts -d ../workspace.root -t -1 -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doFits --parallel 6 "${FIT_OPT[@]}"
+combineTool.py -M Impacts -d ../workspace.root -t -1 -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doFits --parallel 6 "${FIT_OPT[@]}" --setParameterRanges fsr=-2,2:CMS_qg_Weight=-2,2 --cminPreScan
 combineTool.py -M Impacts -d ../workspace.root -m 120 -o impacts_signal_injected.json
 plotImpacts.py -i impacts_signal_injected.json -o impacts_signal_injected
+plotImpacts.py -i impacts_signal_injected.json -o impacts_qcd --groups QCD
+plotImpacts.py -i impacts_signal_injected.json -o impacts_no_qcd --veto-groups QCD extern
 
 popd
     """
     createScript(script, 'do_impacts_signal_injected.sh')
 
 
-    # Script: plots of NLL vs. ALL QCD rate parameters
+    # Script: plots of NLL vs. nuisance parameters
     script = """
-function scan_param() {
-    combine -M MultiDimFit --algo grid --points 50 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1=0.5,1.5 --redefineSignalPOIs $1 "${FIT_OPT[@]}"
+function scan_param() {{
+    combine -M MultiDimFit --algo grid --points 20 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1={scan} -P $1 "${{FIT_OPT[@]}}"
     plot1DScan.py higgsCombine_$1.MultiDimFit.mH120.root --output scan_$1 --POI $1
-}
+    
+    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1={scan} -P $1 "${{FIT_OPT[@]}}" -S 0
+    plot1DScan.py higgsCombine_freeze_$1.MultiDimFit.mH120.root --output scan_freeze_$1 --POI $1
+    
+    combine -M MultiDimFit --algo grid --points 20 -n _freezeQCD_$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1={scan} -P $1 --freezeNuisanceGroups extern,QCD
+    plot1DScan.py higgsCombine_freezeQCD_$1.MultiDimFit.mH120.root --output scan_freezeQCD_$1 --POI $1
+}}
 export -f scan_param # needed for parallel
 
-mkdir QCD_scans
-pushd QCD_scans
-SHELL=/bin/bash parallel --gnu -j 6 scan_param ::: %s
+mkdir scans
+pushd scans
+SHELL=/bin/bash parallel --gnu -j 6 scan_param ::: {params}
 popd
-""" % " ".join(syst_groups['QCD'])
-    createScript(script, 'do_QCD_scans.sh')
+"""
+    # createScript(script.format(scan="0.5,1.5", params=" ".join(syst_groups['QCD'])), 'do_QCD_scans.sh')
+    createScript(script.format(scan="-2,2", params=" ".join(syst_groups['exp'])), 'do_exp_scans.sh')
+    createScript(script.format(scan="-2,2", params=" ".join(syst_groups['theory'])), 'do_theory_scans.sh')
+    
+    script = """
+function scan_param() {{
+    combine -M MultiDimFit --algo grid --points 20 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" --floatOtherPOIs 1
+    plot1DScan.py higgsCombine_$1.MultiDimFit.mH120.root --output scan_$1 --POI $1
+    
+    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" -S 0 --floatOtherPOIs 1
+    plot1DScan.py higgsCombine_freeze_$1.MultiDimFit.mH120.root --output scan_freeze_$1 --POI $1
+}}
+export -f scan_param # needed for parallel
+
+mkdir scans
+pushd scans
+SHELL=/bin/bash parallel --gnu -j 6 scan_param ::: {params}
+popd
+"""
+    createScript(script.format(params=" ".join(syst_groups['QCD'])), 'do_QCD_scans.sh')
 
 
-def addRateSystematics(cb, json_path, sub_folder=None):
+def addRateSystematics(cb, json_path, sub_folder=None, fact_theory=None):
     # JSON is encoded as UTF8 by default, and that messes with the combineHarvester bindings
     def ascii_encode_dict(data):
         def ascii_encode(x):
@@ -321,6 +381,30 @@ def addRateSystematics(cb, json_path, sub_folder=None):
                 value_up = systs[cat][sys]["Up"][proc]
                 value_down = systs[cat][sys]["Down"][proc]
                 sys_dict.append( (cat, proc, (value_down, value_up)) )
+
+    # FIXME ugly hardcoded part
+    # Re-create systematics for those we want factorised among ttbar components
+    if fact_theory is not None:
+        for name, syst in newSysts.items():
+            if name in fact_theory:
+                newSysts[name] = []
+                newSysts[name + "_ttbb"] = []
+                newSysts[name + "_ttcc"] = []
+                newSysts[name + "_ttlf"] = []
+                for entry in syst:
+                    # FIXME common nuisance for ttbb templates?
+                    if entry[1] in ['ttbb', 'ttbb_other', 'ttb_other']:
+                        newSysts[name + "_ttbb"].append(entry)
+                    elif entry[1] == "ttcc":
+                        newSysts[name + "_ttcc"].append(entry)
+                    elif entry[1] == "ttlf":
+                        newSysts[name + "_ttlf"].append(entry)
+                    else:
+                        newSysts[name].append(entry)
+                # So that the returned list of systematics makes sense:
+                if len(newSysts[name]) == 0:
+                    newSysts.pop(name)
+
 
     # print(newSysts)
 

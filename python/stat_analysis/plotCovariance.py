@@ -9,8 +9,8 @@ R.gROOT.SetBatch(True)
 tf = R.TFile.Open("fitDiagnostics.root")
 fit = tf.Get("fit_s")
 cov = fit.correlationHist()
-cov.GetXaxis().SetLabelSize(0.005)
-cov.GetYaxis().SetLabelSize(0.005)
+cov.GetXaxis().SetLabelSize(0.004)
+cov.GetYaxis().SetLabelSize(0.004)
 
 c = R.TCanvas("c", "c", 2500, 2500)
 

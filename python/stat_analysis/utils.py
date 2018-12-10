@@ -4,7 +4,7 @@ import re
 
 from HistogramTools import getEnvelopeHistograms, equaliseBins, openFileAndGet
 
-def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, lumi_scale=None, equal_bins=False, sub_folder=None):
+def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, fact_theory=None, lumi_scale=None, equal_bins=False, sub_folder=None):
     """
     Extract the shapes from input_filename and prepare them for combineHarvester in output_filename.
     The output file should contain directories named after the categories, containing histograms named as '$PROCESS' or '$PROCESS_$SYST(Up|Down)'
@@ -13,7 +13,9 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         - In the CR1 and SR, define 'delta' histograms named 'QCD_bin_{i=1..N}' that will serve to estimate QCD from a combined fit of CR1 and SR. Each histogram is zero everywhere but in bin i the yield is set as the estimated QCD in that bin (esimated = by subtraction in CR1 and CR2, and in SR and VR it's the from the corresponding CR scaled to the total expected)
         - If real_data is False, redefine data_obs in the SR as the sum of all background estimates (with QCD normalised to the total data in the SR)
         - lumi_scale: use to scale all yields by some factor
+        - fact_theory: for given shape uncertainties, will add _process to histogram name for ttbb, ttcc and ttjj
         - equal_bins: if True, will recreate new histograms with equal-size bins (easier for plotting)
+        - sub_folder: move into the sub-folder of the input ROOT file
 
     Returns:
         - a list of ratios QCD_data/QCD_est (per bin) in the VR, to define the systematic on QCD in the SR
@@ -85,6 +87,21 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
             all_histos[cat][up.GetName()] = up
             all_histos[cat][down.GetName()] = down
 
+    # FIXME ugly hardcoded part
+    # For theory uncertainties factorised among ttbar components
+    if fact_theory is not None:
+        for cat in categories:
+            for name, hist in all_histos[cat].items():
+                for proc in ['ttbb', 'ttbb_other', 'ttb_other', 'ttcc', 'ttlf']:
+                    for syst in fact_theory:
+                        for dire in ["Up", "Down"]:
+                            if name == proc + "_" + syst + dire:
+                                # FIXME common nuisance for ttbb templates?
+                                if proc in ['ttbb', 'ttbb_other', 'ttb_other']: systProc = syst + "_ttbb"
+                                else: systProc = syst + "_" + proc
+                                newName = proc + "_" + systProc + dire
+                                newHist = hist.Clone(newName)
+                                all_histos[cat][newName] = newHist
 
     for cat in categories:
         # define sum of nominal backgrounds and signals
@@ -156,6 +173,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
                 delta.SetBinContent(i, all_histos[cat]['QCD_est'].GetBinContent(i))
             if cat in ['CR1', 'CR2']:
                 delta.SetBinContent(i, all_histos[cat]['QCD_subtr'].GetBinContent(i))
+            # delta.SetBinContent(i, 1.)
             delta.SetBinError(i, 0)
             all_histos[cat][name] = delta
 

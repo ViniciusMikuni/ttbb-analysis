@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
+import csv
 from subprocess import call
 import ROOT as R
 
 from definitions import externalised_nuisances
-# externalised_nuisances = ['tune', 'isr', 'fsr']
+# externalised_nuisances = ['tune']
 
-nominalFit = 'higgsCombineTest.MultiDimFit.mH120.root'
-initialCommand = 'combine -M GenerateOnly --saveToys --toysNoSystematics --expectSignal=1 -t -1 -n _toyAsimov -d workspace.root'
-fitCommand = 'combine -M MultiDimFit -d workspace.root --algo singles --freezeNuisanceGroups=extern -n _fit_{nuisance}_{dire} --toysFile=higgsCombine_toyAsimov.GenerateOnly.mH120.123456.root --freezeParameters {nuisance} --setParameters {nuisance}={val}'
+nominalFit = '../higgsCombineTest.MultiDimFit.mH120.root'
+initialCommand = 'combine -M GenerateOnly --saveToys --toysNoSystematics --expectSignal=1 -t -1 -n _toyAsimov -d ../workspace.root'
+fitCommand = 'combine -M MultiDimFit -d ../workspace.root --algo singles --freezeNuisanceGroups=extern -n _fit_{nuisance}_{dire} --toysFile=higgsCombine_toyAsimov.GenerateOnly.mH120.123456.root --freezeParameters {nuisance} --setParameters {nuisance}={val} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=99999999999 --robustFit 1'
 
 directions = {"up": 1, "down": -1}
 
@@ -37,8 +38,14 @@ for nuisance in externalised_nuisances:
 
 print('\n\n')
 
-for nuisance in externalised_nuisances:
-    up, down = values[nuisance]['up'], values[nuisance]['down']
-    print('Effect of {}: +{:.1f}% / -{:.1f}%'.format(nuisance, 100 * abs(up-nominal)/nominal, 100 * abs(down-nominal)/nominal))
+with open("extern_systematics.csv", "wb") as _f:
+    writer = csv.DictWriter(_f, fieldnames=['source', 'up', 'down'])
+    writer.writeheader()
 
+    for nuisance in externalised_nuisances:
+        up, down = values[nuisance]['up'], values[nuisance]['down']
+        var_up = abs(up-nominal)/nominal
+        var_down = abs(down-nominal)/nominal
+        writer.writerow({'source': nuisance, 'up': var_up, 'down': var_down})
+        print('Effect of {}: +{:.1f}% / -{:.1f}%'.format(nuisance, 100 * var_up, 100 * var_down))
 
