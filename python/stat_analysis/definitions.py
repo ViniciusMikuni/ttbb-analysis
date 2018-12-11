@@ -9,7 +9,7 @@ tt_bkg = [
 # FIXME
 sig_processes = [
         'ttbb',
-        # 'ttbb_other',
+        'ttbb_other',
         'ttb_other',
         # 'tt2b'
     ]
