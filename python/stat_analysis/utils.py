@@ -145,12 +145,24 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
 
     # If fake data, define data_obs in SR as the sum of MC backgrounds plus QCD estimate
     # (so using shape from CR1 but overall normalisation from data in SR)
+    # if not real_data:
+        # for cat in ['SR', 'VR']:
+            # data_obs = all_histos[cat]['data_obs']
+            # data_obs.Reset()
+            # data_obs.Add(all_histos[cat]['mc_total'])
+            # data_obs.Add(all_histos[cat]['QCD_est'])
+    # If fake data, define data_obs in SR as what the ABCD would give, and in the VR as sum of MC bkgs plus QCD est
     if not real_data:
-        for cat in ['SR', 'VR']:
-            data_obs = all_histos[cat]['data_obs']
-            data_obs.Reset()
-            data_obs.Add(all_histos[cat]['mc_total'])
-            data_obs.Add(all_histos[cat]['QCD_est'])
+        data_obs = all_histos["VR"]['data_obs']
+        data_obs.Reset()
+        data_obs.Add(all_histos["VR"]['mc_total'])
+        data_obs.Add(all_histos["VR"]['QCD_est'])
+
+        data_obs = all_histos["SR"]['data_obs']
+        for i in range(1, Nbins + 1):
+            data_obs.SetBinContent(i, all_histos['VR']['QCD_est'].GetBinContent(i) * all_histos['CR1']['QCD_subtr'].GetBinContent(i) / all_histos['CR2']['QCD_subtr'].GetBinContent(i))
+        data_obs.Add(all_histos["SR"]['mc_total'])
+
 
     # Compute ratios of QCD_subtr over QCD_est for each bin of the VR template
     # NOTE: not used anymore for ABCD setup
@@ -159,6 +171,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         QCD_est = all_histos['VR']['QCD_est']
         QCD_subtr = all_histos['VR']['QCD_subtr']
         QCD_ratios.append(QCD_subtr.GetBinContent(i) / QCD_est.GetBinContent(i))
+
     print("QCD ratios in VR:")
     print(QCD_ratios)
 
@@ -169,10 +182,19 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
             name = 'QCD_bin_{}'.format(i)
             delta = total.Clone(name)
             delta.Reset()
-            if cat in ['SR', 'VR']:
-                delta.SetBinContent(i, all_histos[cat]['QCD_est'].GetBinContent(i))
-            if cat in ['CR1', 'CR2']:
+            if cat == 'SR':
+                if real_data:
+                    pred_yield = all_histos['VR']['QCD_subtr'].GetBinContent(i) * all_histos['CR1']['QCD_subtr'].GetBinContent(i) / all_histos['CR2']['QCD_subtr'].GetBinContent(i)
+                # if blind, use "estimated" QCD in the VR to extrapolate to SR
+                else:
+                    pred_yield = all_histos['VR']['QCD_est'].GetBinContent(i) * all_histos['CR1']['QCD_subtr'].GetBinContent(i) / all_histos['CR2']['QCD_subtr'].GetBinContent(i)
+                delta.SetBinContent(i, pred_yield)
+            if cat in ['CR1', 'CR2', 'VR']:
                 delta.SetBinContent(i, all_histos[cat]['QCD_subtr'].GetBinContent(i))
+            # if cat in ['SR', 'VR']:
+                # delta.SetBinContent(i, all_histos[cat]['QCD_est'].GetBinContent(i))
+            # if cat in ['CR1', 'CR2']:
+                # delta.SetBinContent(i, all_histos[cat]['QCD_subtr'].GetBinContent(i))
             # delta.SetBinContent(i, 1.)
             delta.SetBinError(i, 0)
             all_histos[cat][name] = delta

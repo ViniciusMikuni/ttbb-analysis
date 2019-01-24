@@ -2,6 +2,7 @@
 
 import ROOT
 from HistogramTools import setTDRStyle
+from math import sqrt
     
 setTDRStyle()
 
@@ -22,13 +23,32 @@ else:
     sr = tf.Get("SR/QCDMC_SR")
     vr = tf.Get("VR/QCDMC_VR")
 
-sr.Divide(cr1)
-vr.Divide(cr2)
+# sr.Divide(cr1)
+# vr.Divide(cr2)
+# vr.Multiply(cr1)
+cr2.Divide(cr1)
+cr2.Multiply(sr)
+sr = cr2
 
 # cr1.Divide(sr)
 # cr2.Divide(vr)
 
-ks = sr.KolmogorovTest(vr)
+# ks = sr.KolmogorovTest(vr)
+# ks = sr.Chi2Test(vr, "WW")
+# ks = cr2.Chi2Test(vr, "WW")
+ks = cr2.KolmogorovTest(vr)
+print(ks)
+
+
+
+nBins = sr.GetNbinsX()
+ratios = []
+for i in range(1, nBins+2):
+    if vr.GetBinContent(i) == 0: continue
+    r = sr.GetBinContent(i) / vr.GetBinContent(i)
+    w = sqrt((sr.GetBinError(i)/sr.GetBinContent(i))**2 + (vr.GetBinError(i)/vr.GetBinContent(i))**2)
+    ratios.append(r)
+print(ratios)
 
 c = ROOT.TCanvas()
 
@@ -43,7 +63,7 @@ vr.SetLineColor(38)
 vr.SetMarkerColor(38)
 vr.SetLineWidth(2)
 sr.Draw()
-sr.GetYaxis().SetRangeUser(0, 1.5)
+# sr.GetYaxis().SetRangeUser(0, 1.5)
 vr.Draw("same")
 
 if data:

@@ -14,6 +14,7 @@ import HistogramTools as ht
 
 components = [ c for c in defs.exp_systs if '_j' in c ]
 
+# definitions = ["full"]
 definitions = ["fiducial", "fiducial_parton", "full"]
 categs = ["CR1", "CR2", "SR", "VR"]
 

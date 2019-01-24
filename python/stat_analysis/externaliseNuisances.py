@@ -5,11 +5,11 @@ from subprocess import call
 import ROOT as R
 
 from definitions import externalised_nuisances
-# externalised_nuisances = ['tune']
+# externalised_nuisances = ['GluonMoveCRTune']
 
 nominalFit = '../higgsCombineTest.MultiDimFit.mH120.root'
 initialCommand = 'combine -M GenerateOnly --saveToys --toysNoSystematics --expectSignal=1 -t -1 -n _toyAsimov -d ../workspace.root'
-fitCommand = 'combine -M MultiDimFit -d ../workspace.root --algo singles --freezeNuisanceGroups=extern -n _fit_{nuisance}_{dire} --toysFile=higgsCombine_toyAsimov.GenerateOnly.mH120.123456.root --freezeParameters {nuisance} --setParameters {nuisance}={val} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=99999999999 --robustFit 1'
+fitCommand = 'combine -M MultiDimFit -d ../workspace.root --algo singles --freezeNuisanceGroups=extern -n _fit_{nuisance}_{dire} --toysFile=higgsCombine_toyAsimov.GenerateOnly.mH120.123456.root --freezeParameters {nuisance} --setParameters {nuisance}={val} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=99999999999 --robustFit 1 -t -1'
 
 directions = {"up": 1, "down": -1}
 
@@ -24,6 +24,8 @@ def getFitXS(_f):
     return val
 
 nominal = getFitXS(nominalFit)
+
+print("Retrieved nominal best-fit: {}".format(nominal))
     
 values = {}
 
