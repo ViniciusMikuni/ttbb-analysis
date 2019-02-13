@@ -13,7 +13,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         - In the CR1 and SR, define 'delta' histograms named 'QCD_bin_{i=1..N}' that will serve to estimate QCD from a combined fit of CR1 and SR. Each histogram is zero everywhere but in bin i the yield is set as the estimated QCD in that bin (esimated = by subtraction in CR1 and CR2, and in SR and VR it's the from the corresponding CR scaled to the total expected)
         - If real_data is False, redefine data_obs in the SR as the sum of all background estimates (with QCD normalised to the total data in the SR)
         - lumi_scale: use to scale all yields by some factor
-        - fact_theory: for given shape uncertainties, will add _process to histogram name for ttbb, ttcc and ttjj
+        - fact_theory: factorise shape uncertainties based on a properly configured instance of definitions.FactorisedTheory
         - equal_bins: if True, will recreate new histograms with equal-size bins (easier for plotting)
         - sub_folder: move into the sub-folder of the input ROOT file
 
@@ -37,12 +37,10 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
             path = sub_folder + '/' + cat
         m_dir = tf.GetDirectory(path)
         all_histos[cat] = {}
-        # print('Moving to {}'.format(cat))
         for key in m_dir.GetListOfKeys():
             th1 = key.ReadObj()
             if th1:
                 th1.SetDirectory(R.nullptr)
-                # print('Loading {}'.format(key.GetName()))
                 # All histos must be positive...
                 for i in range(th1.GetNbinsX() + 2):
                     if th1.GetBinContent(i) < 0: th1.SetBinContent(i, 0)
@@ -87,19 +85,15 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
             all_histos[cat][up.GetName()] = up
             all_histos[cat][down.GetName()] = down
 
-    # FIXME ugly hardcoded part
     # For theory uncertainties factorised among ttbar components
     if fact_theory is not None:
         for cat in categories:
             for name, hist in all_histos[cat].items():
-                for proc in ['ttbb', 'ttbb_other', 'ttb_other', 'ttcc', 'ttlf']:
-                    for syst in fact_theory:
+                for proc in fact_theory.processes:
+                    for syst in fact_theory.factorised_uncertainties:
                         for dire in ["Up", "Down"]:
                             if name == proc + "_" + syst + dire:
-                                # FIXME common nuisance for ttbb templates?
-                                if proc in ['ttbb', 'ttbb_other', 'ttb_other']: systProc = syst + "_ttbb"
-                                else: systProc = syst + "_" + proc
-                                newName = proc + "_" + systProc + dire
+                                newName = proc + '_' + fact_theory.getNewNuisance(syst, proc) + dire
                                 newHist = hist.Clone(newName)
                                 all_histos[cat][newName] = newHist
 
@@ -172,8 +166,8 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         QCD_subtr = all_histos['VR']['QCD_subtr']
         QCD_ratios.append(QCD_subtr.GetBinContent(i) / QCD_est.GetBinContent(i))
 
-    print("QCD ratios in VR:")
-    print(QCD_ratios)
+    # print("QCD ratios in VR:")
+    # print(QCD_ratios)
 
     # Define 'delta' histograms for each bin in all categories
     # Yield = estimated yield

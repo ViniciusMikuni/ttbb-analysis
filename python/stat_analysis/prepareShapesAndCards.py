@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser(description='Create shape datacards ready for combine')
 
     parser.add_argument('-i', '--input', required=True, help='Input ROOT file containing templates')
-    parser.add_argument('-d', '--data', action='store_true', help='Use real data in SIGNAL REGION (by default, will transfer QCD shape from the CR1) - for now Asimov datasets are always used.')
+    parser.add_argument('-d', '--data', action='store_true', help='Use real data in SIGNAL REGION (by default, will build fake data using estimated QCD). Also, use real data in the fit (by default use Asimov)')
     parser.add_argument('--bbb', action='store_true', help='Add bin-by-bin uncertainties')
     parser.add_argument('--fit-mode', required=True, choices=['shape_CR1', 'abcd'], help='Fit mode')
     parser.add_argument('--qcd-systs', dest='QCD_systs', action='store_true', help='If mode is "shape_CR1", add uncertainty on the QCD shape from the VR/CR2 ratio')
@@ -28,7 +28,7 @@ def main():
     parser.add_argument('--rate-systs', nargs='*', help='Input any JSON files with theory rate systematics in the four regions')
     parser.add_argument('--exp-rate', nargs='*', help='Input any JSON files with experimental rate systematics in the four regions')
     parser.add_argument('--sub-folder', help='Select sub-folder inside the input ROOT file')
-    parser.add_argument('--fact-theory', action='store_true', help='Factorise some theory uncertainties among ttXX components')
+    parser.add_argument('--fact-theory', nargs='?', choices=['some', 'all', 'OOA'], help='Factorise some theory uncertainties among ttXX components. Either keep all ttbb common ("some"), factorise everything ("all"), or separate in-acceptance ttbb from the other ttbs ("OOA").')
     parser.add_argument('-o', '--output', required=True, help='Output directory')
 
     options = parser.parse_args()
@@ -56,23 +56,18 @@ def prepareShapesAndCards(options):
         ]
         print('-- QCD etimation: bin-by-bin ABCD using the four regions --')
 
-    # Handle factorised uncertainties for ttbar components
-    theory_shape_systs = []
-    if options.fact_theory:
-        fact_theory = defs.factorised_ttbar_theory
-        for procs, syst in defs.theory_shape_systs:
-            if syst in fact_theory:
-                theory_shape_systs.append((defs.sig_processes, syst + "_ttbb"))
-                theory_shape_systs.append((['ttcc'], syst + "_ttcc"))
-                theory_shape_systs.append((['ttlf'], syst + "_ttlf"))
-            else:
-                theory_shape_systs.append((procs, syst))
-    else:
-        fact_theory = None
-        theory_shape_systs = defs.theory_shape_systs
+    # object to handle the factorisation of uncertainties among ttbar components
+    factTheory = defs.FactorisedTheory(options.fact_theory)
     
+    # factorise shape uncertainties for ttbar components
+    theory_shape_systs = []
+    for procs, syst in defs.theory_shape_systs:
+        for newProcs,newSyst in factTheory.getGrouping(procs, syst):
+            theory_shape_systs.append((newProcs, newSyst))
+    
+    # Process shapes
     processed_shapes = os.path.join(options.output, 'processed_shapes.root')
-    QCD_VR_ratios, est_QCD_yields, QCD_shape_CR1, QCD_shape_CR2 = utils.extractShapes(options.input, processed_shapes, defs.tt_bkg + defs.other_bkg, defs.sig_processes, options.data, fact_theory=fact_theory, equal_bins=options.equal_bins, sub_folder=options.sub_folder)
+    QCD_VR_ratios, est_QCD_yields, QCD_shape_CR1, QCD_shape_CR2 = utils.extractShapes(options.input, processed_shapes, defs.tt_bkg + defs.other_bkg, defs.sig_processes, options.data, fact_theory=factTheory, equal_bins=options.equal_bins, sub_folder=options.sub_folder)
     Nbins = len(QCD_VR_ratios)
 
     cb.AddObservations(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], cats)
@@ -96,7 +91,7 @@ def prepareShapesAndCards(options):
     # Theory rate uncertainties from the JSON file
     if options.rate_systs is not None:
         for json_file in options.rate_systs:
-            added_theory_systs += addRateSystematics(cb, json_file, options.sub_folder, fact_theory)
+            added_theory_systs += addRateSystematics(cb, json_file, options.sub_folder, factTheory)
     
     # Experimental rate uncertainties from the JSON file
     if options.exp_rate is not None:
@@ -254,10 +249,16 @@ if [[ ! -f workspace.root ]]; then
 fi
 
 RMIN=0.
-RMAX=10.0
+RMAX=5.0
 NPOINTS=50
-FIT_OPT=( --freezeNuisanceGroups=extern --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 )
+FIT_OPT=( --freezeNuisanceGroups=extern --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --cminDefaultMinimizerPrecision 1E-12 )
 """
+    if options.data:
+        print("WILL USE REAL DATA IN SR")
+        initWorkSpace += 'TOY=""\n'
+    else:
+        print("Will use Asimov toy")
+        initWorkSpace += 'TOY="-t -1\n"'
 
     def createScript(content, filename):
         script_path = os.path.join(output_dir, filename)
@@ -270,25 +271,23 @@ FIT_OPT=( --freezeNuisanceGroups=extern --cminDefaultMinimizerStrategy 0 --X-rtd
 
     # Script: simple fits
     script = """
-combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 -t -1 --algo singles  --setCrossingTolerance 1E-7 "${FIT_OPT[@]}"
-#combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 --saveShapes --saveNormalizations --saveWithUncertainties --plots "${FIT_OPT[@]}" --cminDefaultMinimizerPrecision 1E-13
+combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 ${TOY} --algo singles --setCrossingTolerance 1E-7 "${FIT_OPT[@]}"
+#combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 --skipBOnlyFit --saveShapes --saveNormalizations --saveWithUncertainties --plots "${FIT_OPT[@]}"
 #combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal $1 -t 1000 -n _freq_$1 --toysFrequentist "${FIT_OPT[@]}" > freq_$1.log
 
-# For unblinding
-#combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --algo singles "${FIT_OPT[@]}"
-#combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX --skipBOnlyFit --saveShapes --saveNormalizations --saveWithUncertainties --plots "${FIT_OPT[@]}" --cminDefaultMinimizerPrecision 1E-12
-#combine -M GoodnessOfFit workspace.root --algo=saturated --fixedSignalStrength=1 "${FIT_OPT[@]}" 
-#parallel --gnu -j 5 combine -M GoodnessOfFit workspace.root --algo=saturated --fixedSignalStrength=1 "${FIT_OPT[@]}" -t 100 -s 12345{} --toysFreq ::: {1..10}
+# Goodness of fit
+#combine -M GoodnessOfFit workspace.root --algo=saturated "${FIT_OPT[@]}" 
+#parallel --gnu -j 5 combine -M GoodnessOfFit workspace.root --algo=saturated "${FIT_OPT[@]}" -t 100 -s 12345{} --toysFreq ::: {1..10}
 """
     createScript(script, 'do_fit.sh')
 
 
     # Script: plots of NLL vs. r for different uncertainties
     script = """
-RMIN=0.6
-RMAX=1.6
-combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _nominal workspace.root "${FIT_OPT[@]}"
-combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _stat -S 0 workspace.root "${FIT_OPT[@]}"
+RMIN=0.5
+RMAX=3.
+combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 -n _nominal workspace.root "${FIT_OPT[@]}"
+combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 -n _stat -S 0 workspace.root "${FIT_OPT[@]}"
 
 # for post-fit: save best-fit parameters to workspace
 #combine -M MultiDimFit --rMin $RMIN --rMax $RMAX -n _snap --saveWorkspace workspace.root "${FIT_OPT[@]}"
@@ -297,22 +296,22 @@ combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -
 plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown syst,stat
 
 # also do frozen theory (not used anymore)
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root "${FIT_OPT[@]}"
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root "${FIT_OPT[@]}"
 #plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_theory.MultiDimFit.mH120.root:Freeze theory:4' 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown theory,syst,stat
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_jet workspace.root --freezeParameters 'rgx{CMS_.*_j$}'
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_jet workspace.root --freezeParameters 'rgx{CMS_.*_j$}'
 #plot1DScan.py higgsCombine_freeze_jet.MultiDimFit.mH120.root --output scan_freeze_jet
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_qg workspace.root --freezeParameters CMS_qg_Weight
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_qg workspace.root --freezeParameters CMS_qg_Weight
 #plot1DScan.py higgsCombine_freeze_qg.MultiDimFit.mH120.root --output scan_freeze_qg
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_btag workspace.root --freezeParameters 'rgx{.*btag.*}'
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_btag workspace.root --freezeParameters 'rgx{.*btag.*}'
 #plot1DScan.py higgsCombine_freeze_btag.MultiDimFit.mH120.root --output scan_freeze_btag
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_theory workspace.root --freezeNuisanceGroups theory
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_theory workspace.root --freezeNuisanceGroups theory
 #plot1DScan.py higgsCombine_freeze_theory.MultiDimFit.mH120.root --output scan_freeze_theory
 
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -t -1 --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_exp workspace.root --freezeNuisanceGroups exp
+#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_exp workspace.root --freezeNuisanceGroups exp
 #plot1DScan.py higgsCombine_freeze_exp.MultiDimFit.mH120.root --output scan_freeze_exp
     """
     createScript(script, 'do_DeltaNLL_plot.sh')
@@ -323,8 +322,8 @@ plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine
 mkdir impacts
 pushd impacts
 
-combineTool.py -M Impacts -d ../workspace.root -t -1 -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doInitialFit "${FIT_OPT[@]}"
-combineTool.py -M Impacts -d ../workspace.root -t -1 -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doFits --parallel 6 "${FIT_OPT[@]}" --setParameterRanges CMS_qg_Weight=-2,2 --cminPreScan
+combineTool.py -M Impacts -d ../workspace.root ${TOY} -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doInitialFit "${FIT_OPT[@]}"
+combineTool.py -M Impacts -d ../workspace.root ${TOY} -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doFits --parallel 6 "${FIT_OPT[@]}" --setParameterRanges CMS_qg_Weight=-2,2 --cminPreScan
 combineTool.py -M Impacts -d ../workspace.root -m 120 -o impacts_signal_injected.json
 plotImpacts.py -i impacts_signal_injected.json -o impacts_signal_injected
 plotImpacts.py -i impacts_signal_injected.json -o impacts_qcd --groups QCD
@@ -338,13 +337,13 @@ popd
     # Script: plots of NLL vs. nuisance parameters
     script = """
 function scan_param() {{
-    combine -M MultiDimFit --algo grid --points 20 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1={scan} -P $1 "${{FIT_OPT[@]}}"
+    combine -M MultiDimFit --algo grid --points 20 -n _$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2:$1={scan} -P $1 "${{FIT_OPT[@]}}" --floatOtherPOIs 1
     plot1DScan.py higgsCombine_$1.MultiDimFit.mH120.root --output scan_$1 --POI $1
-    
-    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1={scan} -P $1 "${{FIT_OPT[@]}}" -S 0
+ 
+    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2:$1={scan} -P $1 "${{FIT_OPT[@]}}" -S 0 --floatOtherPOIs 1
     plot1DScan.py higgsCombine_freeze_$1.MultiDimFit.mH120.root --output scan_freeze_$1 --POI $1
     
-    combine -M MultiDimFit --algo grid --points 20 -n _freezeQCD_$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2:$1={scan} -P $1 --freezeNuisanceGroups extern,QCD
+    combine -M MultiDimFit --algo grid --points 20 -n _freezeQCD_$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2:$1={scan} -P $1 --freezeNuisanceGroups extern,QCD --floatOtherPOIs 1
     plot1DScan.py higgsCombine_freezeQCD_$1.MultiDimFit.mH120.root --output scan_freezeQCD_$1 --POI $1
 }}
 export -f scan_param # needed for parallel
@@ -354,16 +353,16 @@ pushd scans
 SHELL=/bin/bash parallel --gnu -j 6 scan_param ::: {params}
 popd
 """
-    # createScript(script.format(scan="0.5,1.5", params=" ".join(syst_groups['QCD'])), 'do_QCD_scans.sh')
+    createScript(script.format(scan="0.5,1.5", params=" ".join(syst_groups['QCD'])), 'do_QCD_scans.sh')
     createScript(script.format(scan="-2,2", params=" ".join(syst_groups['exp'])), 'do_exp_scans.sh')
     createScript(script.format(scan="-2,2", params=" ".join(syst_groups['theory'])), 'do_theory_scans.sh')
     
     script = """
 function scan_param() {{
-    combine -M MultiDimFit --algo grid --points 20 -n _$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" --floatOtherPOIs 1
+    combine -M MultiDimFit --algo grid --points 20 -n _$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" --floatOtherPOIs 1
     plot1DScan.py higgsCombine_$1.MultiDimFit.mH120.root --output scan_$1 --POI $1
     
-    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 ../workspace.root --setParameters r=1 -t -1 --setParameterRanges r=0,2 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" -S 0 --floatOtherPOIs 1
+    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" -S 0 --floatOtherPOIs 1
     plot1DScan.py higgsCombine_freeze_$1.MultiDimFit.mH120.root --output scan_freeze_$1 --POI $1
 }}
 export -f scan_param # needed for parallel
@@ -376,7 +375,7 @@ popd
     createScript(script.format(params=" ".join(syst_groups['QCD'])), 'do_QCD_scans.sh')
 
 
-def addRateSystematics(cb, json_path, sub_folder=None, fact_theory=None):
+def addRateSystematics(cb, json_path, sub_folder=None, factTheory=None):
     # JSON is encoded as UTF8 by default, and that messes with the combineHarvester bindings
     def ascii_encode_dict(data):
         def ascii_encode(x):
@@ -404,29 +403,17 @@ def addRateSystematics(cb, json_path, sub_folder=None, fact_theory=None):
                 value_down = systs[cat][sys]["Down"][proc]
                 sys_dict.append( (cat, proc, (value_down, value_up)) )
 
-    # FIXME ugly hardcoded part
     # Re-create systematics for those we want factorised among ttbar components
-    if fact_theory is not None:
+    # expects definitions.FactorisedTheory object
+    if factTheory is not None:
         for name, syst in newSysts.items():
-            if name in fact_theory:
+            if name in factTheory.factorised_uncertainties:
                 newSysts[name] = []
-                newSysts[name + "_ttbb"] = []
-                newSysts[name + "_ttcc"] = []
-                newSysts[name + "_ttlf"] = []
                 for entry in syst:
-                    # FIXME common nuisance for ttbb templates?
-                    if entry[1] in ['ttbb', 'ttbb_other', 'ttb_other']:
-                        newSysts[name + "_ttbb"].append(entry)
-                    elif entry[1] == "ttcc":
-                        newSysts[name + "_ttcc"].append(entry)
-                    elif entry[1] == "ttlf":
-                        newSysts[name + "_ttlf"].append(entry)
-                    else:
-                        newSysts[name].append(entry)
+                    newSysts.setdefault(factTheory.getNewNuisance(name, entry[1]), []).append(entry)
                 # So that the returned list of systematics makes sense:
                 if len(newSysts[name]) == 0:
                     newSysts.pop(name)
-
 
     # print(newSysts)
 

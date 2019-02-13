@@ -8,7 +8,7 @@ import ROOT as R
 from definitions import exp_systs
 
 nominalFit = '../higgsCombineTest.MultiDimFit.mH120.root'
-fitCommand = 'combine -M MultiDimFit -d ../workspace.root --rMin 0 --rMax 5 --expectSignal=1 -t -1 --algo singles --freezeNuisanceGroups=extern --freezeParameters {} -n _{} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --setCrossingTolerance 1E-7'
+fitCommand = 'combine -M MultiDimFit -d ../workspace.root --rMin 0 --rMax 5 --expectSignal=1 --algo singles --freezeNuisanceGroups=extern --freezeParameters {} -n _{} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --setCrossingTolerance 1E-7 --cminDefaultMinimizerPrecision 1E-13'
 
 jec_systs = [ s for s in exp_systs if ( '_j' in s and s != "CMS_JER_j" ) ]
 

@@ -11,7 +11,7 @@ sig_processes = [
         'ttbb',
         'ttbb_other',
         'ttb_other',
-        # 'tt2b'
+        'tt2b'
     ]
 
 other_bkg = [
@@ -124,12 +124,73 @@ externalised_nuisances = [
 ]
 
 # Decorrelated theory uncertainties between various ttXX components (separately signals, ttcc and ttjj)
-factorised_ttbar_theory = [
-    "CMS_LHEscale_Weight",
-    "fsr",
-    "isr",
-    "hdamp",
-]
+class FactorisedTheory:
+
+    def __init__(self, strategy):
+        if strategy is None or strategy == "":
+            self.factorised_uncertainties = []
+            self.groups = {}
+        else:
+            self.factorised_uncertainties = [
+                "CMS_LHEscale_Weight",
+                "fsr",
+                "isr",
+                "hdamp",
+            ]
+        
+        # common nuisance for all tt(2)b(b), not used anymore
+        if strategy == "some":
+            self.groups = {
+                'ttbb': ['ttbb', 'ttbb_other', 'ttb_other', 'tt2b'],
+                'ttcc': ['ttcc'],
+                'ttlf': ['ttlf']
+            }
+        
+        elif strategy == "all":
+            self.groups = {
+                'ttbb': ['ttbb'],
+                'ttbb_other': ['ttbb_other'],
+                'ttb_other': ['ttb_other'],
+                'tt2b': ['tt2b'],
+                'ttcc': ['ttcc'],
+                'ttlf': ['ttlf']
+            }
+    
+        elif strategy == "OOA":
+            self.groups = {
+                'ttbb': ['ttbb'],
+                'ttbb_other': ['tt2b', 'ttb_other', 'ttbb_other'],
+                'ttcc': ['ttcc'],
+                'ttlf': ['ttlf']
+            }
+
+        self.processes = []
+        for gr in self.groups.values():
+            for p in gr:
+                self.processes.append(p)
+        if len(self.processes) != len(set(self.processes)):
+            raise Exception
+
+    def getGrouping(self, procs, nuis):
+        if nuis not in self.factorised_uncertainties:
+            return [(procs, nuis)]
+
+        newNysts = {}
+        for proc in procs:
+            if proc not in self.processes:
+                newNysts.setdefault(nuis, set()).add(proc)
+            else:
+                for postfix, group in self.groups.items():
+                    if proc in group:
+                        newNysts.setdefault(nuis + '_' + postfix, set()).add(proc)
+        return [ (list(procs), nuis) for nuis,procs in newNysts.items() ]
+
+    def getNewNuisance(self, nuis, proc):
+        if nuis in self.factorised_uncertainties:
+            for postfix, procList in self.groups.items():
+                if proc in procList:
+                    return nuis + '_' + postfix
+        return nuis
 
 def getNuisanceFromTemplate(key, syst):
     if '$PROCESS' not in key:

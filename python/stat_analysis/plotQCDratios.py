@@ -18,6 +18,10 @@ if data:
     sr = tf.Get("SR/QCD_subtr")
     vr = tf.Get("VR/QCD_subtr")
 else:
+    # cr1 = tf.Get("CR1/ttcc")
+    # cr2 = tf.Get("CR2/ttcc")
+    # sr = tf.Get("SR/ttcc")
+    # vr = tf.Get("VR/ttcc")
     cr1 = tf.Get("CR1/QCDMC_CR1")
     cr2 = tf.Get("CR2/QCDMC_CR2")
     sr = tf.Get("SR/QCDMC_SR")
@@ -26,9 +30,9 @@ else:
 # sr.Divide(cr1)
 # vr.Divide(cr2)
 # vr.Multiply(cr1)
-cr2.Divide(cr1)
-cr2.Multiply(sr)
-sr = cr2
+cr1.Divide(cr2)
+cr1.Multiply(vr)
+vr = cr1
 
 # cr1.Divide(sr)
 # cr2.Divide(vr)
@@ -36,7 +40,7 @@ sr = cr2
 # ks = sr.KolmogorovTest(vr)
 # ks = sr.Chi2Test(vr, "WW")
 # ks = cr2.Chi2Test(vr, "WW")
-ks = cr2.KolmogorovTest(vr)
+ks = sr.KolmogorovTest(vr)
 print(ks)
 
 
@@ -51,9 +55,10 @@ for i in range(1, nBins+2):
 print(ratios)
 
 c = ROOT.TCanvas()
+# c.SetLogy(1)
 
-sr.SetTitle("SR/CR1")
-vr.SetTitle("VR/CR2")
+sr.SetTitle("SR")
+vr.SetTitle("VR*CR1/CR2")
 
 sr.GetXaxis().SetTitle("Unrolled 2D CSV bins")
 sr.SetLineColor(46)
@@ -62,21 +67,21 @@ sr.SetLineWidth(2)
 vr.SetLineColor(38)
 vr.SetMarkerColor(38)
 vr.SetLineWidth(2)
-sr.Draw()
-# sr.GetYaxis().SetRangeUser(0, 1.5)
-vr.Draw("same")
+sr.Draw("e1")
+sr.GetYaxis().SetRangeUser(0, 1400)
+vr.Draw("e1 same")
 
 if data:
-    title = "Ratios of QCD estimates (Data)"
+    title = "QCD estimates in SR (Data)"
 else:
-    title = "Ratios of QCD yields (MC)"
+    title = "QCD in SR (MC)"
 text = ROOT.TLatex(0.16, 0.96, title)
 text.SetNDC(True)
 text.SetTextFont(42)
 text.SetTextSize(0.035)
 text.Draw("same")
 
-leg = ROOT.TLegend(0.75, 0.8, 0.95, 0.9)
+leg = ROOT.TLegend(0.65, 0.8, 0.95, 0.9)
 leg.AddEntry(sr)
 leg.AddEntry(vr)
 leg.SetTextSize(0.04)
@@ -89,6 +94,8 @@ if data:
     c.Print("qcd_ratios_data.pdf")
     c.Print("qcd_ratios_data.png")
 else:
+    # c.Print("ttcc_ratios_mc.pdf")
+    # c.Print("ttcc_ratios_mc.png")
     c.Print("qcd_ratios_mc.pdf")
     c.Print("qcd_ratios_mc.png")
 
