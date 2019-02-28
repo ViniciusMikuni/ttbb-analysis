@@ -286,7 +286,7 @@ combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSigna
 
 # Goodness of fit
 #combine -M GoodnessOfFit workspace.root --algo=saturated "${FIT_OPT[@]}" 
-#parallel --gnu -j 5 combine -M GoodnessOfFit workspace.root --algo=saturated "${FIT_OPT[@]}" -t 100 -s -1 --toysFreq ::: {1..10}
+#parallel --gnu -j 5 -n0 combine -M GoodnessOfFit workspace.root --algo=saturated "${FIT_OPT[@]}" -t 100 -s -1 --toysFreq ::: {1..10}
 #hadd higgsCombineTest.GoodnessOfFit.mH120.toys.root higgsCombineTest.GoodnessOfFit.mH120.*.root
 
 # Postfit plots

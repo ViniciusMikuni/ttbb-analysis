@@ -18,8 +18,9 @@ def findMapping(hists, thresh):
     # TH1F -> list keeps under- and overflow, we don't want those
     nBins = len(hists[tt_bkg[0]]) - 2
 
-    # new histograms will have bins [ (i,j), (k,l,m), (n), ... ] of the old histograms
+    # new histograms will have bins [ [i,j], [k,l,m], [n], ... ] of the old histograms
     # caution: start indexing at zero
+    # initial mapping is [ [0] [1] ... [nBins-1] ]
     mapping = [ [n] for n in range(nBins) ]
     
     sig = [0] * nBins
@@ -51,7 +52,7 @@ def findMapping(hists, thresh):
         iMinNEff = nEff.index(minNEff)
         sbMinNEff = sb[iMinNEff]
 
-        # Find the bin with the closest S/B value, among *all* bins
+        # Find the bin with the closest S/B value, among *all* other bins
         minSBDist = 99999
         iMinSBDist = 0
         for i in range(nBins):
@@ -64,7 +65,7 @@ def findMapping(hists, thresh):
 
         print("Will merge bins {} and {} which have S/B {:.2f} and {:.2f}".format(mapping[iMinNEff], mapping[iMinSBDist], sbMinNEff, sb[iMinSBDist]))
 
-        # merge iMinNEff and iMinSBDist (python indexing)
+        # merge iMinNEff and iMinSBDist
         nBins -= 1
 
         sig[iMinNEff] += sig[iMinSBDist]
@@ -105,14 +106,16 @@ def applyMapping(mapping, hist):
     elif "TH1F" in hist.ClassName():
         thClass = R.TH1F
     else:
-        raise Exception("I don't know what a {} is".format(th2.ClassName()))
+        raise Exception("I don't know what a {} is".format(hist.ClassName()))
     
     newHist = thClass(name, hist.GetTitle(), newBins, 0, newBins)
+    newHist.SetDirectory(0)
     newHist.Sumw2()
 
     for i, merge in enumerate(mapping):
         content = 0.
         sumw2 = 0.
+        # careful, indexing in mapping starts at zero -> we start at bin nr. 1
         for b in merge:
             content += hist.GetBinContent(b+1)
             sumw2 += hist.GetSumw2()[b+1]
