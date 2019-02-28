@@ -29,6 +29,8 @@ def main():
     parser.add_argument('--exp-rate', nargs='*', help='Input any JSON files with experimental rate systematics in the four regions')
     parser.add_argument('--sub-folder', help='Select sub-folder inside the input ROOT file')
     parser.add_argument('--fact-theory', nargs='?', choices=['some', 'all', 'OOA'], help='Factorise some theory uncertainties among ttXX components. Either keep all ttbb common ("some"), factorise everything ("all"), or separate in-acceptance ttbb from the other ttbs ("OOA").')
+    parser.add_argument('--randomise', action='store_true', help='Randomise the MC yields according to the statistical MC uncertainty in each bin.')
+    parser.add_argument('--rebinsb', type=int, default=-1, help='Rebin according to S/B all bins with Neff lower than threshold. Set a negative number to not apply anything, and zero to sort bins according to S/B in the SR (but not rebin anything)')
     parser.add_argument('-o', '--output', required=True, help='Output directory')
 
     options = parser.parse_args()
@@ -64,10 +66,13 @@ def prepareShapesAndCards(options):
     for procs, syst in defs.theory_shape_systs:
         for newProcs,newSyst in factTheory.getGrouping(procs, syst):
             theory_shape_systs.append((newProcs, newSyst))
+
+    if options.randomise:
+        print("-- Will randomise MC predictions according to MC stat uncertainties!")
     
     # Process shapes
     processed_shapes = os.path.join(options.output, 'processed_shapes.root')
-    QCD_VR_ratios, est_QCD_yields, QCD_shape_CR1, QCD_shape_CR2 = utils.extractShapes(options.input, processed_shapes, defs.tt_bkg + defs.other_bkg, defs.sig_processes, options.data, fact_theory=factTheory, equal_bins=options.equal_bins, sub_folder=options.sub_folder)
+    QCD_VR_ratios = utils.extractShapes(options.input, processed_shapes, defs.tt_bkg + defs.other_bkg, defs.sig_processes, options.data, fact_theory=factTheory, equal_bins=options.equal_bins, sub_folder=options.sub_folder, randomise=options.randomise, rebinSB=options.rebinsb)
     Nbins = len(QCD_VR_ratios)
 
     cb.AddObservations(['*'], ['ttbb'], ['13TeV_2016'], ['FH'], cats)
@@ -136,10 +141,11 @@ def prepareShapesAndCards(options):
             # QCD_VR_ratios = [1.1047956681135658, 1.104982852935791, 1.0103355569221637, 1.0365746040205628, 1.027778957040471, 1.1635257239763037, 1.0604289770126343, 1.0326651334762573, 1.0882024148481384, 1.0879310369491577, 1.2372238755691953, 1.1039656400680542, 1.1208300590515137, 1.1252394914627075, 1.0652162084238805, 1.1746360299507677, 1.1441897907967598, 1.032749056816101, 1.1105864995541361, 1.264707088470459, 1.1289979219436646, 1.1032386479572462, 1.3740112781524658, 1.0779788494110107, 1.0679041983173836, 1.1521316766738892, 1.0189466861549783, 1.1371627554677426, 1.180934637513623, 1.0807719230651855, 1.1220710277557373, 1.2163840919860773, 1.1803903579711914, 1.1331188470149183, 1.2841500043869019, 1.124382576013972, 1.2853591442108154, 1.1161022064238948, 1.0491153764429137, 1.3020191192626953, 1.6365387568006153, 1.3135310411453247, 1.183979775003691, 1.3237843031833378, 1.105936050415039, 1.4582525497144114, 1.2740960121154785, 1.1744883060455322, 1.2689180716203021, 1.5666807889938354, 1.1884409189224243, 1.6787212785213594, 1.1295689911887752, 1.2143068313598633, 1.144478440284729]
             # using geometric average
             QCD_VR_ratios = [1.0556093647141687, 1.0658984862062695, 1.0057472468756388, 1.0208612636340562, 1.0185833946498413, 1.1211169739938442, 1.0353973123690785, 1.0258664065695766, 1.0586147959018684, 1.0522305760086619, 1.1354690006073973, 1.072695547895069, 1.0799492240063984, 1.0621373200388462, 1.0593700756267987, 1.1529412209016232, 1.122536304991689, 1.0187320772559685, 1.0972767308832914, 1.175709681780302, 1.0832093989858067, 1.0823283151259013, 1.1831016555993352, 1.054608634579664, 1.0599488955753065, 1.0752925245754967, 1.017269399510584, 1.122209514629158, 1.1702168450787551, 1.0695165830450506, 1.0857979999559528, 1.2041393773004465, 1.1151294041413826, 1.1230274391829085, 1.2502545040629076, 1.1070056845911258, 1.139110776895264, 1.082765772887927, 1.0487710649869804, 1.2332536614187524, 1.4655095128617284, 1.19038044691305, 1.1104215756611893, 1.1838495100927606, 1.0880046566588846, 1.4004062409319984, 1.248629899444753, 1.1411489734003788, 1.1805956668619682, 1.4378115712379096, 1.129952938278906, 1.3437817991926544, 1.0912141233598036, 1.1453139866153634, 1.1135893789689448]
-            for i in range(1, Nbins+1):
-                # lnN = 1.05
-                lnN = QCD_VR_ratios[i-1]
-                cb.cp().bin(['SR']).process(['QCD_bin_{}'.format(i)]).AddSyst(cb, 'QCD_shape_bin_{}'.format(i), 'lnN', ch.SystMap()(lnN))
+            # for i in range(1, Nbins+1):
+                # lnN = 1.2
+                # # lnN = QCD_VR_ratios[i-1]
+                # cb.cp().bin(['SR']).process(['QCD_bin_{}'.format(i)]).AddSyst(cb, 'QCD_shape_bin_{}'.format(i), 'lnN', ch.SystMap()(lnN))
+            cb.cp().process(['ttlf']).AddSyst(cb, 'ttlf_norm', 'lnN', ch.SystMap()(1.2))
 
 
     extraStrForQCD = ''
@@ -166,24 +172,6 @@ def prepareShapesAndCards(options):
         ### QCD estimate: add the rate params for each bin in the CR1, CR2 and VR
         ### The yield in the SR is then expressed as CR1*VR/CR2
         for i in range(1, Nbins+1):
-            # yield_CR2 = est_QCD_yields['CR2'] * QCD_shape_CR2[i-1]
-            # yield_CR1 = est_QCD_yields['CR1'] * QCD_shape_CR1[i-1]
-            # yield_VR = est_QCD_yields['VR'] * QCD_shape_CR2[i-1]
-            # extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} {1} [0,25000]\n'.format(i, yield_CR2)
-            # extraStrForQCD += 'ratio1_QCD_bin_{0} extArg {1} [0.,5.]\n'.format(i, yield_CR1 / yield_CR2)
-            # extraStrForQCD += 'ratio2_QCD_bin_{0} extArg {1} [0.,5.]\n'.format(i, yield_VR / yield_CR2)
-            # extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} 1. [0.,5.]\n'.format(i)
-            # extraStrForQCD += 'ratio1_QCD_bin_{0} extArg 1. [0.,5.]\n'.format(i)
-            # extraStrForQCD += 'ratio2_QCD_bin_{0} extArg 1. [0.,5.]\n'.format(i)
-            # extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} @0*@1 yield_QCD_CR2_bin_{0},ratio1_QCD_bin_{0}\n'.format(i)
-            # extraStrForQCD += 'yield_QCD_VR_bin_{0} rateParam VR QCD_bin_{0} @0*@1 yield_QCD_CR2_bin_{0},ratio2_QCD_bin_{0}\n'.format(i)
-        
-            # extraStrForQCD += 'yield_QCD_SR_bin_{0} rateParam SR QCD_bin_{0} @0*@1*@2 yield_QCD_CR2_bin_{0},ratio1_QCD_bin_{0},ratio2_QCD_bin_{0}\n'.format(i)
-            
-            # paramListQCD.append('yield_QCD_CR2_bin_{}'.format(i))
-            # paramListQCD.append('ratio1_QCD_bin_{}'.format(i))
-            # paramListQCD.append('ratio2_QCD_bin_{}'.format(i))
-    
             extraStrForQCD += 'yield_QCD_CR1_bin_{0} rateParam CR1 QCD_bin_{0} 1. [0.,5.]\n'.format(i)
             extraStrForQCD += 'yield_QCD_CR2_bin_{0} rateParam CR2 QCD_bin_{0} 1. [0.,5.]\n'.format(i)
             extraStrForQCD += 'yield_QCD_VR_bin_{0} rateParam VR QCD_bin_{0} 1. [0.,5.]\n'.format(i)
@@ -221,15 +209,31 @@ def prepareShapesAndCards(options):
         print('-- Will add bin-by-bin uncertainties for MC statistics --')
         # MC statistics - has to be done after the shapes have been extracted!
         # bbb_bkg = ch.BinByBinFactory().SetVerbosity(5)
-        # bbb_bkg.SetAddThreshold(0.05).SetMergeThreshold(0.5).SetFixNorm(False)
+        # bbb_bkg.SetAddThreshold(0.02).SetMergeThreshold(0.5).SetFixNorm(False)
+        # bbb_bkg.MergeBinErrors(cbWithoutQCD.cp().backgrounds())
+        # bbb_bkg.AddBinByBin(cbWithoutQCD.cp().backgrounds(), cb)
+
+        # bbb_sig = ch.BinByBinFactory().SetVerbosity(5).SetFixNorm(False)
+        # bbb_sig.MergeBinErrors(cbWithoutQCD.cp().signals())
+        # bbb_sig.AddBinByBin(cbWithoutQCD.cp().signals(), cb)
+        
+        # bbb = ch.BinByBinFactory().SetVerbosity(5)
+        # bbb.SetAddThreshold(0.).SetMergeThreshold(1.).SetFixNorm(False).SetPoissonErrors(True)
+        # bbb.MergeBinErrors(cb.cp())
+        # bbb.AddBinByBin(cb.cp(), cb)
+        
+        # bbb_sig = ch.BinByBinFactory().SetVerbosity(5)
+        # bbb_sig.SetAddThreshold(0.).SetMergeThreshold(1.).SetFixNorm(False)
+        # bbb_sig.MergeBinErrors(cb.cp().signals())
+        # bbb_sig.AddBinByBin(cb.cp().signals(), cb)
+        # bbb_bkg = ch.BinByBinFactory().SetVerbosity(5)
+        # bbb_bkg.SetAddThreshold(0.).SetMergeThreshold(1.).SetFixNorm(False)
         # bbb_bkg.MergeBinErrors(cb.cp().backgrounds())
         # bbb_bkg.AddBinByBin(cb.cp().backgrounds(), cb)
 
-        # bbb_sig = ch.BinByBinFactory().SetVerbosity(5).SetAddThreshold(0.2).SetFixNorm(False)
-        # bbb_sig.AddBinByBin(cbWithoutQCD.cp().signals(), cb)
-
         # Use combine internal BBB (default: BB lite, merging everything for sig & bkg separately?)
-        cb.AddDatacardLineAtEnd("* autoMCStats 0 0 1\n")
+        cb.AddDatacardLineAtEnd("* autoMCStats 5000 0 1\n")
+        # cb.AddDatacardLineAtEnd("* autoMCStats 10000000 0 1\n")
     
     output_dir = options.output
 
@@ -251,14 +255,14 @@ fi
 RMIN=0.
 RMAX=5.0
 NPOINTS=50
-FIT_OPT=( --freezeNuisanceGroups=extern --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --cminDefaultMinimizerPrecision 1E-12 )
+export FIT_OPT=( --freezeNuisanceGroups=extern --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --cminDefaultMinimizerPrecision 1E-12 )
 """
     if options.data:
-        print("WILL USE REAL DATA IN SR")
-        initWorkSpace += 'TOY=""\n'
+        print("-- WILL USE REAL DATA IN SR")
+        initWorkSpace += 'export TOY=""\n'
     else:
-        print("Will use Asimov toy")
-        initWorkSpace += 'TOY="-t -1\n"'
+        print("-- Will use Asimov toy")
+        initWorkSpace += 'export TOY="-t -1"\n'
 
     def createScript(content, filename):
         script_path = os.path.join(output_dir, filename)
@@ -269,15 +273,24 @@ FIT_OPT=( --freezeNuisanceGroups=extern --cminDefaultMinimizerStrategy 0 --X-rtd
         st = os.stat(script_path)
         os.chmod(script_path, st.st_mode | stat.S_IEXEC)
 
-    # Script: simple fits
+    # Script: simple fit, fit diagnostics, postfit plots, frequentist toys, goodness of fit
     script = """
-combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 ${TOY} --algo singles --setCrossingTolerance 1E-7 "${FIT_OPT[@]}"
-#combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 --skipBOnlyFit --saveShapes --saveNormalizations --saveWithUncertainties --plots "${FIT_OPT[@]}"
-#combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal $1 -t 1000 -n _freq_$1 --toysFrequentist "${FIT_OPT[@]}" > freq_$1.log
+combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal=1 ${TOY} --saveWorkspace --algo singles --setCrossingTolerance 1E-7 "${FIT_OPT[@]}" 2>&1 | tee fit.log
+#combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 --skipBOnlyFit --saveShapes --saveNormalizations --saveWithUncertainties --plots "${FIT_OPT[@]}" 2>&1 | tee fitDiag.log
+#combine -M FitDiagnostics -d workspace.root --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 --skipBOnlyFit --robustHesse 1 "${FIT_OPT[@]}" 2>&1 | tee fitDiag.log
+#../plotCovariance.py
+
+# frequentist toys
+#combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal $1 -t 1000 -n _freq_$1 --toysFrequentist "${FIT_OPT[@]}" -s -1 > freq_$1.log
+#combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSignal $1 -t 1000 -n _freqNoSyst_$1 --toysNoSystematics "${FIT_OPT[@]}" -s -1 > freqNoSyst_$1.log
 
 # Goodness of fit
 #combine -M GoodnessOfFit workspace.root --algo=saturated "${FIT_OPT[@]}" 
-#parallel --gnu -j 5 combine -M GoodnessOfFit workspace.root --algo=saturated "${FIT_OPT[@]}" -t 100 -s 12345{} --toysFreq ::: {1..10}
+#parallel --gnu -j 5 combine -M GoodnessOfFit workspace.root --algo=saturated "${FIT_OPT[@]}" -t 100 -s -1 --toysFreq ::: {1..10}
+#hadd higgsCombineTest.GoodnessOfFit.mH120.toys.root higgsCombineTest.GoodnessOfFit.mH120.*.root
+
+# Postfit plots
+#PostFitShapesFromWorkspace -d datacard.dat -w workspace.root -o postfit_shapes.root -m 120 -f fitDiagnostics.root:fit_s --postfit --sampling --print 2>&1 | tee postFitRates.log
 """
     createScript(script, 'do_fit.sh')
 
@@ -287,63 +300,42 @@ combine -M MultiDimFit -d workspace.root --rMin $RMIN --rMax $RMAX --expectSigna
 RMIN=0.5
 RMAX=3.
 combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 -n _nominal workspace.root "${FIT_OPT[@]}"
-combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 -n _stat -S 0 workspace.root "${FIT_OPT[@]}"
-
-# for post-fit: save best-fit parameters to workspace
-#combine -M MultiDimFit --rMin $RMIN --rMax $RMAX -n _snap --saveWorkspace workspace.root "${FIT_OPT[@]}"
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -n _stat -S 0 --snapshotName "MultiDimFit" -d higgsCombine_snap.MultiDimFit.mH120.root "${FIT_OPT[@]}"
+# stat-only: get best-fit parameters and dataset from saved workspace (so that it also works for post-fit)
+combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX -n _stat -S 0 --snapshotName "MultiDimFit" -d higgsCombineTest.MultiDimFit.mH120.root "${FIT_OPT[@]}"
 
 plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown syst,stat
-
-# also do frozen theory (not used anymore)
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1 -n _theory --freezeNuisanceGroups theory workspace.root "${FIT_OPT[@]}"
-#plot1DScan.py higgsCombine_nominal.MultiDimFit.mH120.root --others 'higgsCombine_theory.MultiDimFit.mH120.root:Freeze theory:4' 'higgsCombine_stat.MultiDimFit.mH120.root:Freeze all:2' --breakdown theory,syst,stat
-
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_jet workspace.root --freezeParameters 'rgx{CMS_.*_j$}'
-#plot1DScan.py higgsCombine_freeze_jet.MultiDimFit.mH120.root --output scan_freeze_jet
-
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_qg workspace.root --freezeParameters CMS_qg_Weight
-#plot1DScan.py higgsCombine_freeze_qg.MultiDimFit.mH120.root --output scan_freeze_qg
-
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_btag workspace.root --freezeParameters 'rgx{.*btag.*}'
-#plot1DScan.py higgsCombine_freeze_btag.MultiDimFit.mH120.root --output scan_freeze_btag
-
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_theory workspace.root --freezeNuisanceGroups theory
-#plot1DScan.py higgsCombine_freeze_theory.MultiDimFit.mH120.root --output scan_freeze_theory
-
-#combine -M MultiDimFit --algo grid --points $NPOINTS --rMin $RMIN --rMax $RMAX ${TOY} --expectSignal=1  "${FIT_OPT[@]}" -n _freeze_exp workspace.root --freezeNuisanceGroups exp
-#plot1DScan.py higgsCombine_freeze_exp.MultiDimFit.mH120.root --output scan_freeze_exp
     """
     createScript(script, 'do_DeltaNLL_plot.sh')
 
 
     # Script: impacts signal injected
     script = """
-mkdir impacts
-pushd impacts
+folder=impacts
+mkdir ${folder}
+pushd ${folder}
 
 combineTool.py -M Impacts -d ../workspace.root ${TOY} -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doInitialFit "${FIT_OPT[@]}"
 combineTool.py -M Impacts -d ../workspace.root ${TOY} -m 120 --rMin $RMIN --rMax $RMAX --expectSignal=1 --doFits --parallel 6 "${FIT_OPT[@]}" --setParameterRanges CMS_qg_Weight=-2,2 --cminPreScan
-combineTool.py -M Impacts -d ../workspace.root -m 120 -o impacts_signal_injected.json
-plotImpacts.py -i impacts_signal_injected.json -o impacts_signal_injected
-plotImpacts.py -i impacts_signal_injected.json -o impacts_qcd --groups QCD
-plotImpacts.py -i impacts_signal_injected.json -o impacts_no_qcd --veto-groups QCD extern
+combineTool.py -M Impacts -d ../workspace.root -m 120 -o impacts.json
+plotImpacts.py -i impacts.json -o impacts
+plotImpacts.py -i impacts.json -o impacts_qcd --groups QCD
+plotImpacts.py -i impacts.json -o impacts_no_qcd --groups '!QCD' '!extern'
 
 popd
     """
-    createScript(script, 'do_impacts_signal_injected.sh')
+    createScript(script, 'do_impacts.sh')
 
 
     # Script: plots of NLL vs. nuisance parameters
     script = """
 function scan_param() {{
-    combine -M MultiDimFit --algo grid --points 20 -n _$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2:$1={scan} -P $1 "${{FIT_OPT[@]}}" --floatOtherPOIs 1
+    combine -M MultiDimFit --algo grid --points 20 -n _$1 --snapshotName "MultiDimFit" -d ../higgsCombineTest.MultiDimFit.mH120.root --setParameterRanges r=0,3:$1={scan} -P $1 "${{FIT_OPT[@]}}" --floatOtherPOIs 1
     plot1DScan.py higgsCombine_$1.MultiDimFit.mH120.root --output scan_$1 --POI $1
  
-    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2:$1={scan} -P $1 "${{FIT_OPT[@]}}" -S 0 --floatOtherPOIs 1
+    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 --snapshotName "MultiDimFit" -d ../higgsCombineTest.MultiDimFit.mH120.root --setParameterRanges r=0,3:$1={scan} -P $1 "${{FIT_OPT[@]}}" -S 0 --floatOtherPOIs 1
     plot1DScan.py higgsCombine_freeze_$1.MultiDimFit.mH120.root --output scan_freeze_$1 --POI $1
     
-    combine -M MultiDimFit --algo grid --points 20 -n _freezeQCD_$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2:$1={scan} -P $1 --freezeNuisanceGroups extern,QCD --floatOtherPOIs 1
+    combine -M MultiDimFit --algo grid --points 20 -n _freezeQCD_$1 --snapshotName "MultiDimFit" -d ../higgsCombineTest.MultiDimFit.mH120.root --setParameterRanges r=0,3:$1={scan} -P $1 --freezeNuisanceGroups extern,QCD --floatOtherPOIs 1
     plot1DScan.py higgsCombine_freezeQCD_$1.MultiDimFit.mH120.root --output scan_freezeQCD_$1 --POI $1
 }}
 export -f scan_param # needed for parallel
@@ -353,16 +345,15 @@ pushd scans
 SHELL=/bin/bash parallel --gnu -j 6 scan_param ::: {params}
 popd
 """
-    createScript(script.format(scan="0.5,1.5", params=" ".join(syst_groups['QCD'])), 'do_QCD_scans.sh')
     createScript(script.format(scan="-2,2", params=" ".join(syst_groups['exp'])), 'do_exp_scans.sh')
     createScript(script.format(scan="-2,2", params=" ".join(syst_groups['theory'])), 'do_theory_scans.sh')
     
     script = """
 function scan_param() {{
-    combine -M MultiDimFit --algo grid --points 20 -n _$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" --floatOtherPOIs 1
+    combine -M MultiDimFit --algo grid --points 20 -n _$1 --snapshotName "MultiDimFit" -d ../higgsCombineTest.MultiDimFit.mH120.root --setParameterRanges r=0,3 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" --floatOtherPOIs 1
     plot1DScan.py higgsCombine_$1.MultiDimFit.mH120.root --output scan_$1 --POI $1
     
-    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 ../workspace.root --setParameters r=1 ${{TOY}} --setParameterRanges r=0,2 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" -S 0 --floatOtherPOIs 1
+    combine -M MultiDimFit --algo grid --points 20 -n _freeze_$1 --snapshotName "MultiDimFit" -d ../higgsCombineTest.MultiDimFit.mH120.root --setParameterRanges r=0,3 -P $1 --autoRange 3 "${{FIT_OPT[@]}}" -S 0 --floatOtherPOIs 1
     plot1DScan.py higgsCombine_freeze_$1.MultiDimFit.mH120.root --output scan_freeze_$1 --POI $1
 }}
 export -f scan_param # needed for parallel
@@ -390,7 +381,7 @@ def addRateSystematics(cb, json_path, sub_folder=None, factTheory=None):
         systs = systs[sub_folder]
 
     # Load all systematics in easier order
-    # newSysts[systematic] = [ (cat, proc, (down, up)), ... ]
+    # i.e. newSysts[systematic] = [ (cat, proc, (down, up)), ... ]
     newSysts = {}
     for cat in systs.keys():
         for sys in systs[cat].keys():

@@ -2,25 +2,26 @@ import ROOT as R
 import os
 import re
 
-from HistogramTools import getEnvelopeHistograms, equaliseBins, openFileAndGet
+from HistogramTools import getEnvelopeHistograms, equaliseBins, openFileAndGet, randomiseHistMCStats
+from optimiseBinning import findMapping, applyMapping
 
-def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, fact_theory=None, lumi_scale=None, equal_bins=False, sub_folder=None):
+def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, real_data=False, fact_theory=None, lumi_scale=None, equal_bins=False, sub_folder=None, randomise=False, rebinSB=-1):
     """
     Extract the shapes from input_filename and prepare them for combineHarvester in output_filename.
     The output file should contain directories named after the categories, containing histograms named as '$PROCESS' or '$PROCESS_$SYST(Up|Down)'
 
         - For now all existing templates for data and MC are copied
         - In the CR1 and SR, define 'delta' histograms named 'QCD_bin_{i=1..N}' that will serve to estimate QCD from a combined fit of CR1 and SR. Each histogram is zero everywhere but in bin i the yield is set as the estimated QCD in that bin (esimated = by subtraction in CR1 and CR2, and in SR and VR it's the from the corresponding CR scaled to the total expected)
-        - If real_data is False, redefine data_obs in the SR as the sum of all background estimates (with QCD normalised to the total data in the SR)
+        - If real_data is False, redefine data_obs in the SR as the sum of all background estimates
         - lumi_scale: use to scale all yields by some factor
-        - fact_theory: factorise shape uncertainties based on a properly configured instance of definitions.FactorisedTheory
+        - fact_theory: factorise shape uncertainties based on a properly configured instance of definitions.FactorisedTheory class
         - equal_bins: if True, will recreate new histograms with equal-size bins (easier for plotting)
         - sub_folder: move into the sub-folder of the input ROOT file
+        - randomise: randomise the MC yields according to the statistical MC uncertainty in each bin
+        - rebinSB: rebin histograms according to S/B for all bins with Neff lower than the specified treshold
 
     Returns:
         - a list of ratios QCD_data/QCD_est (per bin) in the VR, to define the systematic on QCD in the SR
-        - the expected yields of QCD in the categories (estimated by subtraction)
-        - the expected nominal shape of QCD in the SR
     """
 
     tf = openFileAndGet(input_filename)
@@ -68,7 +69,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         to_remove = []
         for key, values in variations.items():
             if len(values) != 6:
-                print("Warning: I was expecting 6 scale variations, but I got {} for {}".format(len(values), key))
+                print("-- Warning: I was expecting 6 scale variations, but I got {} for {}".format(len(values), key))
                 to_remove.append(key)
 
         for n in to_remove:
@@ -97,6 +98,26 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
                                 newHist = hist.Clone(newName)
                                 all_histos[cat][newName] = newHist
 
+
+    # Randomise histos if asked, but be careful that randomisation should be correlated for weight-based systematics!
+    # FIXME hardcoded list of systematics
+    ranSysts = ['CMS_LHEPDF_Weight', 'CMS_LHEscale_Weight', 'CMS_top_Weight', 'CMS_btag_hf','CMS_btag_hfstats1','CMS_btag_hfstats2','CMS_btag_lf','CMS_btag_lfstats1','CMS_btag_lfstats2','CMS_btag_cferr1','CMS_btag_cferr2', 'CMS_qg_Weight','CMS_pu_Weight','CMS_trig_Weight']
+    if randomise:
+        for cat in categories:
+            for proc in mc_backgrounds + mc_signals:
+                oldHist = all_histos[cat][proc]
+                newHist = randomiseHistMCStats(oldHist)
+                for syst in ranSysts:
+                    for dire in ["Up", "Down"]:
+                        name = proc + '_' + syst + dire
+                        if name in all_histos[cat].keys():
+                            systHist = all_histos[cat][name]
+                            for i in range(1, Nbins+1):
+                                if oldHist.GetBinContent(i) > 0:
+                                    systHist.SetBinContent(i, systHist.GetBinContent(i) / oldHist.GetBinContent(i) * newHist.GetBinContent(i))
+                all_histos[cat][proc] = newHist
+
+
     for cat in categories:
         # define sum of nominal backgrounds and signals
         total = all_histos[cat]['data_obs'].Clone('total')
@@ -112,30 +133,24 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         # check for negative bins, set to 1 by default
         for i in range(1, Nbins+1):
             if QCD_subtr.GetBinContent(i) <= 0:
-                print("WARNING: region {}, bin {}: QCD subtr is negative!".format(cat, i))
+                print("-- WARNING: region {}, bin {}: QCD subtr is negative!".format(cat, i))
                 QCD_subtr.SetBinContent(i, 1.)
         all_histos[cat]['QCD_subtr'] = QCD_subtr
  
         est_QCD_yields[cat] = QCD_subtr.Integral()
-        print('QCD yield estimated by subtraction in {}: {}'.format(cat, est_QCD_yields[cat]))
+        print('-- QCD yield estimated by subtraction in {}: {}'.format(cat, est_QCD_yields[cat]))
 
     # Estimate QCD in VR using CR2 (take shape & scale yields)
     QCD_est = all_histos['CR2']['QCD_subtr'].Clone('QCD_est')
     QCD_est.Scale(1./est_QCD_yields['CR2'])
-    QCD_shape_CR2 = [ QCD_est.GetBinContent(i) for i in range(1, Nbins+1) ]
     QCD_est.Scale(est_QCD_yields['VR'])
     all_histos['VR']['QCD_est'] = QCD_est
-    # print("QCD shape in CR2:")
-    # print(QCD_shape_CR2)
 
     # Estimate QCD in SR using CR1 (take shape & scale yields)
     QCD_est = all_histos['CR1']['QCD_subtr'].Clone('QCD_est')
     QCD_est.Scale(1./est_QCD_yields['CR1'])
-    QCD_shape_CR1 = [ QCD_est.GetBinContent(i) for i in range(1, Nbins+1) ]
     QCD_est.Scale(est_QCD_yields['SR'])
     all_histos['SR']['QCD_est'] = QCD_est
-    # print("QCD shape in CR1:")
-    # print(QCD_shape_CR1)
 
     # If fake data, define data_obs in SR as the sum of MC backgrounds plus QCD estimate
     # (so using shape from CR1 but overall normalisation from data in SR)
@@ -145,18 +160,21 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
             # data_obs.Reset()
             # data_obs.Add(all_histos[cat]['mc_total'])
             # data_obs.Add(all_histos[cat]['QCD_est'])
-    # If fake data, define data_obs in SR as what the ABCD would give, and in the VR as sum of MC bkgs plus QCD est
+    # If fake data, define data_obs in SR as what the ABCD would give
     if not real_data:
-        data_obs = all_histos["VR"]['data_obs']
-        data_obs.Reset()
-        data_obs.Add(all_histos["VR"]['mc_total'])
-        data_obs.Add(all_histos["VR"]['QCD_est'])
-
         data_obs = all_histos["SR"]['data_obs']
         for i in range(1, Nbins + 1):
-            data_obs.SetBinContent(i, all_histos['VR']['QCD_est'].GetBinContent(i) * all_histos['CR1']['QCD_subtr'].GetBinContent(i) / all_histos['CR2']['QCD_subtr'].GetBinContent(i))
+            data_obs.SetBinContent(i, all_histos['VR']['QCD_subtr'].GetBinContent(i) * all_histos['CR1']['QCD_subtr'].GetBinContent(i) / all_histos['CR2']['QCD_subtr'].GetBinContent(i))
         data_obs.Add(all_histos["SR"]['mc_total'])
 
+    # If asked, rebin histograms according to S/B in SR
+    if rebinSB >= 0:
+        mapping = findMapping(all_histos['SR'], rebinSB)
+        for cat in categories:
+            for key in all_histos[cat].keys():
+                all_histos[cat][key] = applyMapping(mapping, all_histos[cat][key])
+        Nbins = len(mapping)
+        print("-- New binning has {} bins".format(Nbins))
 
     # Compute ratios of QCD_subtr over QCD_est for each bin of the VR template
     # NOTE: not used anymore for ABCD setup
@@ -165,23 +183,18 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
         QCD_est = all_histos['VR']['QCD_est']
         QCD_subtr = all_histos['VR']['QCD_subtr']
         QCD_ratios.append(QCD_subtr.GetBinContent(i) / QCD_est.GetBinContent(i))
-
     # print("QCD ratios in VR:")
     # print(QCD_ratios)
-
+    
     # Define 'delta' histograms for each bin in all categories
     # Yield = estimated yield
     for cat in categories:
         for i in range(1, Nbins + 1):
             name = 'QCD_bin_{}'.format(i)
-            delta = total.Clone(name)
+            delta = all_histos[cat]['data_obs'].Clone(name)
             delta.Reset()
             if cat == 'SR':
-                if real_data:
-                    pred_yield = all_histos['VR']['QCD_subtr'].GetBinContent(i) * all_histos['CR1']['QCD_subtr'].GetBinContent(i) / all_histos['CR2']['QCD_subtr'].GetBinContent(i)
-                # if blind, use "estimated" QCD in the VR to extrapolate to SR
-                else:
-                    pred_yield = all_histos['VR']['QCD_est'].GetBinContent(i) * all_histos['CR1']['QCD_subtr'].GetBinContent(i) / all_histos['CR2']['QCD_subtr'].GetBinContent(i)
+                pred_yield = all_histos['VR']['QCD_subtr'].GetBinContent(i) * all_histos['CR1']['QCD_subtr'].GetBinContent(i) / all_histos['CR2']['QCD_subtr'].GetBinContent(i)
                 delta.SetBinContent(i, pred_yield)
             if cat in ['CR1', 'CR2', 'VR']:
                 delta.SetBinContent(i, all_histos[cat]['QCD_subtr'].GetBinContent(i))
@@ -204,4 +217,4 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
             hist.Write()
         out_tf.cd()
 
-    return QCD_ratios, est_QCD_yields, QCD_shape_CR1, QCD_shape_CR2
+    return QCD_ratios

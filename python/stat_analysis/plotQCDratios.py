@@ -38,9 +38,9 @@ vr = cr1
 # cr2.Divide(vr)
 
 # ks = sr.KolmogorovTest(vr)
-# ks = sr.Chi2Test(vr, "WW")
+ks = sr.Chi2Test(vr, "WW")
 # ks = cr2.Chi2Test(vr, "WW")
-ks = sr.KolmogorovTest(vr)
+# ks = sr.KolmogorovTest(vr)
 print(ks)
 
 
@@ -67,9 +67,9 @@ sr.SetLineWidth(2)
 vr.SetLineColor(38)
 vr.SetMarkerColor(38)
 vr.SetLineWidth(2)
-sr.Draw("e1")
-sr.GetYaxis().SetRangeUser(0, 1400)
-vr.Draw("e1 same")
+vr.Draw("e1")
+# sr.GetYaxis().SetRangeUser(0, 1400)
+sr.Draw("e1 same")
 
 if data:
     title = "QCD estimates in SR (Data)"

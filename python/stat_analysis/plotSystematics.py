@@ -158,7 +158,7 @@ def drawSystematicImpl(nominal, s):
     up_ratio.GetXaxis().SetTitleSize(0.03 / 0.333)
     up_ratio.GetXaxis().SetLabelOffset(0.05)
     up_ratio.GetXaxis().SetTitleOffset(1.5)
-    up_ratio.GetXaxis().SetTitle("BLR bin")
+    up_ratio.GetXaxis().SetTitle("Unrolled 2DCSV bin")
     up_ratio.GetYaxis().SetLabelSize(0.02 / 0.333)
     up_ratio.GetYaxis().SetTitleSize(0.03 / 0.333)
     up_ratio.GetYaxis().SetTitleOffset(1.7 * 0.333)
