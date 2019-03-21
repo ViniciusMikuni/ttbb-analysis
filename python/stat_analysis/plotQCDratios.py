@@ -10,7 +10,7 @@ ROOT.gROOT.SetBatch(True)
 
 tf = ROOT.TFile.Open("processed_shapes.root")
 
-data = True
+data = False
 
 if data:
     cr1 = tf.Get("CR1/QCD_subtr")

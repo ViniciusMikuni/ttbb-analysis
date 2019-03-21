@@ -155,6 +155,15 @@ class FactorisedTheory:
                 'ttcc': ['ttcc'],
                 'ttlf': ['ttlf']
             }
+        
+        elif strategy == "all_tt2b":
+            self.groups = {
+                'ttbb': ['ttbb'],
+                'ttbb_other': ['ttbb_other'],
+                'ttb': ['ttb_other', 'tt2b'],
+                'ttcc': ['ttcc'],
+                'ttlf': ['ttlf']
+            }
     
         elif strategy == "OOA":
             self.groups = {
@@ -163,6 +172,9 @@ class FactorisedTheory:
                 'ttcc': ['ttcc'],
                 'ttlf': ['ttlf']
             }
+
+        elif strategy == "none":
+            self.groups = { 'all': ['ttbb', 'ttbb_other', 'ttb_other', 'tt2b', 'ttcc', 'ttlf'] }
 
         self.processes = []
         for gr in self.groups.values():

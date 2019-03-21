@@ -79,6 +79,10 @@ def findMapping(hists, thresh):
 
         mapping[iMinNEff] += mapping[iMinSBDist]
         mapping.pop(iMinSBDist)
+
+    # fixed mapping with 32 bins
+    mapping = [[1], [10], [0], [4], [11], [3], [5], [19], [2], [13], [12], [20], [34, 14], [23], [28], [29], [15, 6], [27, 21], [46, 7], [22], [16], [36, 30], [41, 37], [45, 35, 17], [24, 42, 25], [49, 50, 43, 8], [38, 40, 31], [47, 52, 32], [26, 33, 44], [39, 48, 18], [51, 9], [53, 54]]
+    return mapping
     
     sb = getSB()
     
@@ -86,7 +90,7 @@ def findMapping(hists, thresh):
     sorting = sorted(range(nBins), key=sb.__getitem__)
     mapping = [ mapping[i] for i in sorting ]
 
-    print("Proposed mapping:")
+    print("Proposed mapping: {} bins".format(len(mapping)))
     print(mapping)
     
     print("Sorted S/B after:")

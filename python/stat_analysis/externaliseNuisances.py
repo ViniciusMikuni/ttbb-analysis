@@ -10,7 +10,7 @@ from definitions import externalised_nuisances
 nominalFit = '../higgsCombineTest.MultiDimFit.mH120.root'
 # initialCommand = 'combine -M GenerateOnly --saveToys --toysNoSystematics --expectSignal=1 -t -1 -n _toyAsimov -d ../workspace.root'
 # fitCommand = 'combine -M MultiDimFit -d ../workspace.root --algo singles --freezeNuisanceGroups=extern -n _fit_{nuisance}_{dire} --toysFile=higgsCombine_toyAsimov.GenerateOnly.mH120.123456.root --freezeParameters {nuisance} --setParameters {nuisance}={val} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=99999999999 --robustFit 1 -t -1'
-fitCommand = 'combine -M MultiDimFit -d ../workspace.root --algo singles --freezeNuisanceGroups=extern -n _fit_{nuisance}_{dire} --freezeParameters {nuisance} --setParameters {nuisance}={val} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=99999999999 --robustFit 1 --cminDefaultMinimizerPrecision 1E-13'
+fitCommand = 'combine -M MultiDimFit -d ../workspace.root --algo singles --freezeNuisanceGroups=extern -n _fit_{nuisance}_{dire} --freezeParameters {nuisance} --setParameters {nuisance}={val} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=99999999999 --robustFit 1 --cminDefaultMinimizerPrecision 1E-12'
 
 directions = {"up": 1, "down": -1}
 
@@ -47,8 +47,8 @@ with open("extern_systematics.csv", "wb") as _f:
 
     for nuisance in externalised_nuisances:
         up, down = values[nuisance]['up'], values[nuisance]['down']
-        var_up = abs(up-nominal)/nominal
-        var_down = abs(down-nominal)/nominal
+        var_up = (up-nominal)/nominal
+        var_down = (nominal-down)/nominal
         writer.writerow({'source': nuisance, 'up': var_up, 'down': var_down})
-        print('Effect of {}: +{:.1f}% / -{:.1f}%'.format(nuisance, 100 * var_up, 100 * var_down))
+        print('Effect of {}: + {:.1f}% / - {:.1f}%'.format(nuisance, 100 * var_up, 100 * var_down))
 

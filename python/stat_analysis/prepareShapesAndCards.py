@@ -28,7 +28,7 @@ def main():
     parser.add_argument('--rate-systs', nargs='*', help='Input any JSON files with theory rate systematics in the four regions')
     parser.add_argument('--exp-rate', nargs='*', help='Input any JSON files with experimental rate systematics in the four regions')
     parser.add_argument('--sub-folder', help='Select sub-folder inside the input ROOT file')
-    parser.add_argument('--fact-theory', nargs='?', choices=['some', 'all', 'OOA'], help='Factorise some theory uncertainties among ttXX components. Either keep all ttbb common ("some"), factorise everything ("all"), or separate in-acceptance ttbb from the other ttbs ("OOA").')
+    parser.add_argument('--fact-theory', nargs='?', choices=['some', 'all', 'all_tt2b', 'OOA', 'none'], help='Factorise some theory uncertainties among ttXX components. Either keep all ttbb common ("some"), factorise everything ("all"), or separate in-acceptance ttbb from the other ttbs ("OOA").')
     parser.add_argument('--randomise', action='store_true', help='Randomise the MC yields according to the statistical MC uncertainty in each bin.')
     parser.add_argument('--rebinsb', type=int, default=-1, help='Rebin according to S/B all bins with Neff lower than threshold. Set a negative number to not apply anything, and zero to sort bins according to S/B in the SR (but not rebin anything)')
     parser.add_argument('-o', '--output', required=True, help='Output directory')
@@ -141,11 +141,11 @@ def prepareShapesAndCards(options):
             # QCD_VR_ratios = [1.1047956681135658, 1.104982852935791, 1.0103355569221637, 1.0365746040205628, 1.027778957040471, 1.1635257239763037, 1.0604289770126343, 1.0326651334762573, 1.0882024148481384, 1.0879310369491577, 1.2372238755691953, 1.1039656400680542, 1.1208300590515137, 1.1252394914627075, 1.0652162084238805, 1.1746360299507677, 1.1441897907967598, 1.032749056816101, 1.1105864995541361, 1.264707088470459, 1.1289979219436646, 1.1032386479572462, 1.3740112781524658, 1.0779788494110107, 1.0679041983173836, 1.1521316766738892, 1.0189466861549783, 1.1371627554677426, 1.180934637513623, 1.0807719230651855, 1.1220710277557373, 1.2163840919860773, 1.1803903579711914, 1.1331188470149183, 1.2841500043869019, 1.124382576013972, 1.2853591442108154, 1.1161022064238948, 1.0491153764429137, 1.3020191192626953, 1.6365387568006153, 1.3135310411453247, 1.183979775003691, 1.3237843031833378, 1.105936050415039, 1.4582525497144114, 1.2740960121154785, 1.1744883060455322, 1.2689180716203021, 1.5666807889938354, 1.1884409189224243, 1.6787212785213594, 1.1295689911887752, 1.2143068313598633, 1.144478440284729]
             # using geometric average
             QCD_VR_ratios = [1.0556093647141687, 1.0658984862062695, 1.0057472468756388, 1.0208612636340562, 1.0185833946498413, 1.1211169739938442, 1.0353973123690785, 1.0258664065695766, 1.0586147959018684, 1.0522305760086619, 1.1354690006073973, 1.072695547895069, 1.0799492240063984, 1.0621373200388462, 1.0593700756267987, 1.1529412209016232, 1.122536304991689, 1.0187320772559685, 1.0972767308832914, 1.175709681780302, 1.0832093989858067, 1.0823283151259013, 1.1831016555993352, 1.054608634579664, 1.0599488955753065, 1.0752925245754967, 1.017269399510584, 1.122209514629158, 1.1702168450787551, 1.0695165830450506, 1.0857979999559528, 1.2041393773004465, 1.1151294041413826, 1.1230274391829085, 1.2502545040629076, 1.1070056845911258, 1.139110776895264, 1.082765772887927, 1.0487710649869804, 1.2332536614187524, 1.4655095128617284, 1.19038044691305, 1.1104215756611893, 1.1838495100927606, 1.0880046566588846, 1.4004062409319984, 1.248629899444753, 1.1411489734003788, 1.1805956668619682, 1.4378115712379096, 1.129952938278906, 1.3437817991926544, 1.0912141233598036, 1.1453139866153634, 1.1135893789689448]
-            # for i in range(1, Nbins+1):
-                # lnN = 1.2
-                # # lnN = QCD_VR_ratios[i-1]
-                # cb.cp().bin(['SR']).process(['QCD_bin_{}'.format(i)]).AddSyst(cb, 'QCD_shape_bin_{}'.format(i), 'lnN', ch.SystMap()(lnN))
-            cb.cp().process(['ttlf']).AddSyst(cb, 'ttlf_norm', 'lnN', ch.SystMap()(1.2))
+            for i in range(1, Nbins+1):
+                lnN = 1.1
+                # lnN = QCD_VR_ratios[i-1]
+                cb.cp().bin(['SR']).process(['QCD_bin_{}'.format(i)]).AddSyst(cb, 'QCD_shape_bin_{}'.format(i), 'lnN', ch.SystMap()(lnN))
+            # cb.cp().process(['ttlf']).AddSyst(cb, 'ttlf_norm', 'lnN', ch.SystMap()(1.2))
 
 
     extraStrForQCD = ''

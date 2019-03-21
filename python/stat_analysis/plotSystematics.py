@@ -88,7 +88,7 @@ def drawSystematicImpl(nominal, s):
 
     if s.type() != 'shape':
         return
-
+    
     c = ROOT.TCanvas("c", "c")
 
     hi_pad = ROOT.TPad("pad_hi", "", 0., 0.33333, 1, 1)
@@ -268,7 +268,7 @@ backgrounds = cb.cp().backgrounds()
 
 processes = backgrounds.process_set()
 
-chosen_bkg_processes = ['ttcc', 'ttlf', 'QCD']
+chosen_bkg_processes = ['ttcc', 'ttlf']
 
 setTDRStyle()
 

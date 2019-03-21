@@ -67,7 +67,7 @@ ax = fig.add_subplot(111)
 # ax.set_xlabel("Best fit test statistic")
 
 sns.distplot(toys, ax=ax, axlabel='Best fit test statistic')
-ax.annotate('data', xytext=(data[0], 0.01), xy=(data[0], 0), ha='center', arrowprops=dict(linewidth=2, arrowstyle='->', mutation_scale=35, connectionstyle='arc3'))
+ax.annotate('data', xytext=(data[0], 0.01), xy=(data[0], 0), ha='center', arrowprops=dict(color='black', linewidth=2, arrowstyle='->', mutation_scale=35, connectionstyle='arc3'))
 ax.text(0.95, 0.95, 'p-value: {:.1f}%'.format(100*p_value), transform=ax.transAxes, horizontalalignment='right', verticalalignment='top')
 
 fig.tight_layout()
