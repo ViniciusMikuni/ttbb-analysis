@@ -11,21 +11,23 @@ ROOT.gROOT.SetBatch(True)
 tf = ROOT.TFile.Open("processed_shapes.root")
 
 def plotAll():
+    """Plot all four regions S/B on one plot"""
+
     ratios = {}
 
     for region in ['SR', 'VR', 'CR1', 'CR2']:
         ttbb = tf.Get(region + "/ttbb")
-        # ttbb_other = tf.Get(region + "/ttbb_other")
+        ttbb_other = tf.Get(region + "/ttbb_other")
         ttb_other = tf.Get(region + "/ttb_other")
-        # tt2b = tf.Get(region + "/tt2b")
+        tt2b = tf.Get(region + "/tt2b")
         ttcc = tf.Get(region + "/ttcc")
         ttlf = tf.Get(region + "/ttlf")
         QCD = tf.Get(region + "/QCD_subtr")
 
         sig = ttbb.Clone("Signals")
-        # sig.Add(ttbb_other)
+        sig.Add(ttbb_other)
         sig.Add(ttb_other)
-        # sig.Add(tt2b)
+        sig.Add(tt2b)
 
         bkg = QCD.Clone("Backgrounds")
         bkg.Add(ttcc)
@@ -75,6 +77,8 @@ def plotAll():
     c.Print("sb_ratios.pdf".format(region))
 
 def plot(region):
+    """Plot S/B distribution for one region"""
+
     ttbb = tf.Get(region + "/ttbb")
     ttbb_other = tf.Get(region + "/ttbb_other")
     ttb_other = tf.Get(region + "/ttb_other")
