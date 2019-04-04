@@ -35,6 +35,7 @@ exp_systs = [
         'CMS_qg_Weight',
         'CMS_pu_Weight',
         'CMS_trig_Weight',
+        'CMS_L1_Weight',
 
         # 'CMS_Total_j', # TOTAL JEC
         'CMS_AbsoluteStat_j',

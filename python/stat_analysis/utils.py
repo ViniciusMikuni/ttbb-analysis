@@ -50,7 +50,7 @@ def extractShapes(input_filename, output_filename, mc_backgrounds, mc_signals, r
                 else:
                     myTH1 = th1
                 all_histos[cat][key.GetName()] = myTH1
-                if lumi_scale:
+                if lumi_scale and myTH1.GetName() != "data_obs":
                     myTH1.Scale(lumi_scale)
     tf.Close()
 

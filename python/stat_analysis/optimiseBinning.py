@@ -15,6 +15,10 @@ def addLists(a, b):
     return [ a[i] + b[i] for i in range(len(a)) ]
 
 def findMapping(hists, thresh):
+    # fixed mapping with 32 bins
+    mapping = [[1], [10], [0], [4], [11], [3], [5], [19], [2], [13], [12], [20], [34, 14], [23], [28], [29], [15, 6], [27, 21], [46, 7], [22], [16], [36, 30], [41, 37], [45, 35, 17], [24, 42, 25], [49, 50, 43, 8], [38, 40, 31], [47, 52, 32], [26, 33, 44], [39, 48, 18], [51, 9], [53, 54]]
+    return mapping
+    
     # TH1F -> list keeps under- and overflow, we don't want those
     nBins = len(hists[tt_bkg[0]]) - 2
 
@@ -80,9 +84,6 @@ def findMapping(hists, thresh):
         mapping[iMinNEff] += mapping[iMinSBDist]
         mapping.pop(iMinSBDist)
 
-    # fixed mapping with 32 bins
-    mapping = [[1], [10], [0], [4], [11], [3], [5], [19], [2], [13], [12], [20], [34, 14], [23], [28], [29], [15, 6], [27, 21], [46, 7], [22], [16], [36, 30], [41, 37], [45, 35, 17], [24, 42, 25], [49, 50, 43, 8], [38, 40, 31], [47, 52, 32], [26, 33, 44], [39, 48, 18], [51, 9], [53, 54]]
-    return mapping
     
     sb = getSB()
     
@@ -133,7 +134,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Optimise the binning according to S/B and stat uncertainty')
     
     parser.add_argument('-i', '--input', type=str, required=True, help='Input ROOT file')
-    parser.add_argument('-o', '--output', type=str, required=True, help='Output pkl file containing the mapping')
+    parser.add_argument('-o', '--output', type=str, required=True, help='Output ROOT file where mapping is applied to all input histograms')
     parser.add_argument('-t', '--threshold', type=int, default=1000, help='Neff threshold')
 
     options = parser.parse_args()
@@ -143,7 +144,28 @@ if __name__ == "__main__":
     readRecursiveDirContent(inContent, inTFile)
     inTFile.Close()
 
-    mapping = findMapping(inContent['SR'], options.threshold)
+    mapping = findMapping(inContent['fiducial']['SR'], options.threshold)
+
+    def mappingApplicator(_mapping):
+        def impl(hist):
+            return applyMapping(_mapping, hist)
+        return impl
     
-    with open(options.output, 'w') as _f:
-        pickle.dump(mapping, _f)
+    def applyAndCopy(inDict, outDict, func, inherit):
+        for key, obj in inDict.items():
+            if isinstance(obj, dict):
+                newDict = {}
+                outDict[key] = newDict
+                applyAndCopy(obj, newDict, func, inherit)
+            elif obj.InheritsFrom(inherit):
+                outDict[key] = func(obj)
+            else:
+                outDict[key] = obj
+
+    outContent = {}
+    applyAndCopy(inContent, outContent, mappingApplicator(mapping), "TH1")
+    
+    outTFile = openFileAndGet(options.output, "recreate")
+    writeRecursiveDirContent(outContent, outTFile)
+    outTFile.Close()
+
