@@ -9,18 +9,19 @@ from definitions import exp_systs
 
 nominalFit = '../higgsCombineTest.MultiDimFit.mH120.root'
 # fitCommand = 'combine -M MultiDimFit -d ../workspace.root --rMin 0 --rMax 5 --expectSignal=1 --algo singles --freezeNuisanceGroups=extern --freezeParameters {} -n _{} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --setCrossingTolerance 1E-7 --cminDefaultMinimizerPrecision 1E-12'
-fitCommand = 'combine -M MultiDimFit -d ../higgsCombineTest.MultiDimFit.mH120.root --snapshotName "MultiDimFit" --rMin 0 --rMax 5 --expectSignal=1 --algo singles --freezeNuisanceGroups=extern --freezeParameters {} -n _{} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --setCrossingTolerance 1E-7 --cminDefaultMinimizerPrecision 1E-12'
+
+# fitCommand = 'combine -M MultiDimFit -d ../higgsCombineTest.MultiDimFit.mH120.root --snapshotName "MultiDimFit" --rMin 0 --rMax 5 --expectSignal=1 --algo singles --freezeNuisanceGroups=extern --freezeParameters {} -n _{} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --setCrossingTolerance 1E-7 --cminDefaultMinimizerPrecision 1E-12'
+fitCommand = "combine -M MultiDimFit -d ../higgsCombineTest.MultiDimFit.mH120.root --snapshotName 'MultiDimFit' --rMin 0 --rMax 5 --expectSignal=1 --algo singles --freezeNuisanceGroup=^{} -n _{} --cminDefaultMinimizerStrategy 0 --X-rtd MINIMIZER_MaxCalls=999999999 --X-rtd MINIMIZER_analytic --robustFit 1 --setCrossingTolerance 1E-7 --cminDefaultMinimizerPrecision 1E-12"
 
 jec_systs = [ s for s in exp_systs if ( '_j' in s and s != "CMS_JER_j" ) ]
 
 nuisanceGroups = {
-    # "MC_stat": ("Simulated sample size", "'rgx{CMS_.*_2016.*_bin.*}'"),
     "MC_stat": ("Simulated sample size", "'rgx{prop_.*}'"),
     "JES_JER": ("JES \& JER", "'rgx{CMS_.*_j}'"),
     "btag": ("\PQb tagging", "'rgx{CMS_btag_.*}'"),
     "qg": ("Quark-gluon likelihood", "CMS_qg_Weight"),
     "pu": ("Pileup", "CMS_pu_Weight"),
-    "trigger": ("Trigger efficiency", "CMS_trig_Weight"),
+    "trigger": ("Trigger efficiency", "CMS_trig_Weight,CMS_L1_Weight"),
     "ttcc_norm": (r"\ttbarcc normalisation", "ttcc_norm"),
     "tune": ("UE tune", "tune"),
     "hdamp": ("Shower matching (hdamp)", "'rgx{hdamp_.*}'"),
@@ -57,7 +58,7 @@ values = {}
 
 for source,group in nuisanceGroups.items():
 
-    call(fitCommand.format(group[1], source), shell=True)
+    # call(fitCommand.format(group[1], source), shell=True)
     values[source] = getFitUncertainties('higgsCombine_{}.MultiDimFit.mH120.root'.format(source))
 
 print('\n\n')

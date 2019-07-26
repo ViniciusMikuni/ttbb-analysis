@@ -128,7 +128,14 @@ def setTDRStyle():
   tdrStyle.SetOptLogy(0)
   tdrStyle.SetOptLogz(0)
 
+  tdrStyle.SetCanvasDefH(600) #Height of canvas
+  tdrStyle.SetCanvasDefW(540) #Width of canvas
+  tdrStyle.SetTitleSize(1, "XYZ")
+  tdrStyle.SetLabelSize(0.1, "XYZ")
   tdrStyle.cd()
+
+
+  return tdrStyle
 
 
 
@@ -141,13 +148,13 @@ def CMS_lumi(pad, iPeriod, iPosX, extraText="Preliminary"):
     cmsTextFont   = 61  
 
     writeExtraText = True
-    extraText   = "Preliminary"
+    # extraText   = "Preliminary"
     extraTextFont = 52 
 
     lumiTextSize     = 0.6
     lumiTextOffset   = 0.2
 
-    cmsTextSize      = 0.75
+    cmsTextSize      = 1. #0.75
     cmsTextOffset    = 0.1
 
     relPosX    = 0.045
@@ -156,7 +163,7 @@ def CMS_lumi(pad, iPeriod, iPosX, extraText="Preliminary"):
 
     extraOverCmsTextSize  = 0.76
 
-    lumi_13TeV = "20.1 fb^{-1}"
+    lumi_13TeV = "35.9 fb^{-1}"
     lumi_8TeV  = "19.7 fb^{-1}" 
     lumi_7TeV  = "5.1 fb^{-1}"
     lumi_sqrtS = ""
@@ -225,11 +232,12 @@ def CMS_lumi(pad, iPeriod, iPosX, extraText="Preliminary"):
     latex.SetTextAngle(0)
     latex.SetTextColor(ROOT.kBlack)    
     
-    extraTextSize = extraOverCmsTextSize*cmsTextSize
+    extraTextSize = 0.8 #extraOverCmsTextSize*cmsTextSize
     
     latex.SetTextFont(42)
     latex.SetTextAlign(31) 
-    latex.SetTextSize(lumiTextSize*t)    
+    latex.SetTextSize(extraTextSize*t)    
+    # latex.SetTextSize(lumiTextSize*t)    
 
     latex.DrawLatex(1-r,1-t+lumiTextOffset*t,lumiText)
 

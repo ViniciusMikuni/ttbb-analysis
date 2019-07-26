@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-# NOTE: to be used outside of CMS environment and with:
-# export PATH=/swshare/anaconda/bin/:$PATH
-# export PYTHONPATH=/mnt/t3nfs01/data01/shome/creissel/.local/lib/python2.7/site-packages:${CMSSW_BASE}/python:$PYTHONPATH
+# NOTE: to be used with recent LCG release
 
 import argparse
 import numpy as np

@@ -23,7 +23,7 @@ for b in bins:
 _tf = R.TFile("fitDiagnostics.root")
 fitResult = _tf.Get("fit_s")
 
-nSamples = 1000
+nSamples = 10000
 sums = {}
 for b in bins:
     sums[b] = np.zeros(nSamples)

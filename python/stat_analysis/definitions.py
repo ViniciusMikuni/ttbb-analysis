@@ -122,6 +122,7 @@ externalised_nuisances = [
     'QCDbasedCRTune',
     'GluonMoveCRTune_erdON',
     'erdOn',
+    'lumi_13TeV_2016',
 ]
 
 # Decorrelated theory uncertainties between various ttXX components (separately signals, ttcc and ttjj)
